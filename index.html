@@ -10,24 +10,66 @@
 
   :root, [data-theme="dark"]{
     --bg: #14171c; --surface: #1c2128; --surface-2: #232a33; --line: #2c343f;
-    --ink: #e8e6df; --ink-dim: #8b93a1; --gold: #d4a373; --gold-dim: #8a6a4d;
+    --ink: #f0eee8; --ink-dim: #a0a8b5; --gold: #d4a373; --gold-dim: #8a6a4d;
     --err: #c96a5a; --bomb: #e07a5f;
     --mine-bg: #2a2115; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
     --mask-a: #2a323d; --mask-b: #14171c; --overlay: rgba(10,12,15,0.65);
   }
   [data-theme="light"]{
     --bg: #f4f2ec; --surface: #ffffff; --surface-2: #ebe7de; --line: #cfc8ba;
-    --ink: #1c1915; --ink-dim: #5a5348; --gold: #9a6b2e; --gold-dim: #b8894a;
+    --ink: #1a1714; --ink-dim: #4a443c; --gold: #9a6b2e; --gold-dim: #b8894a;
     --err: #c0453a; --bomb: #d96b52;
     --mine-bg: #f3e6d4; --bomb-bg: #fce8e2; --bomb-ink: #a94432;
     --mask-a: #e8e4dc; --mask-b: #f4f2ec; --overlay: rgba(40,36,30,0.4);
   }
   [data-theme="gray"]{
-    --bg: #2b2f36; --surface: #363b44; --surface-2: #404651; --line: #4d5562;
-    --ink: #e6e4df; --ink-dim: #9aa1ad; --gold: #d4a373; --gold-dim: #9a7a58;
+    --bg: #1e2126; --surface: #282c33; --surface-2: #323740; --line: #3e4450;
+    --ink: #eceae5; --ink-dim: #9aa1ad; --gold: #d4a373; --gold-dim: #9a7a58;
     --err: #d07a6c; --bomb: #e08a72;
-    --mine-bg: #3d342c; --bomb-bg: #3d2a28; --bomb-ink: #f0b8a8;
-    --mask-a: #3a404a; --mask-b: #2b2f36; --overlay: rgba(15,17,20,0.6);
+    --mine-bg: #342c26; --bomb-bg: #3d2a28; --bomb-ink: #f0b8a8;
+    --mask-a: #323740; --mask-b: #1e2126; --overlay: rgba(12,14,16,0.65);
+  }
+  [data-theme="ocean"]{
+    --bg: #0f1a22; --surface: #162430; --surface-2: #1d2f3d; --line: #2a4256;
+    --ink: #e6eef4; --ink-dim: #8aa0b4; --gold: #5eb3c8; --gold-dim: #3d7a8c;
+    --err: #d07070; --bomb: #e08a72;
+    --mine-bg: #1a3038; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
+    --mask-a: #1d2f3d; --mask-b: #0f1a22; --overlay: rgba(8,12,16,0.65);
+  }
+  [data-theme="forest"]{
+    --bg: #121a14; --surface: #1a241c; --surface-2: #223028; --line: #2e4034;
+    --ink: #e8efe6; --ink-dim: #8aa090; --gold: #7cb87a; --gold-dim: #4e7a4c;
+    --err: #c96a5a; --bomb: #e07a5f;
+    --mine-bg: #243028; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
+    --mask-a: #223028; --mask-b: #121a14; --overlay: rgba(8,12,10,0.65);
+  }
+  [data-theme="rose"]{
+    --bg: #1c1418; --surface: #261c22; --surface-2: #322830; --line: #443840;
+    --ink: #f2e8ec; --ink-dim: #b090a0; --gold: #d4899c; --gold-dim: #9a5a6e;
+    --err: #d07070; --bomb: #e08a72;
+    --mine-bg: #322028; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
+    --mask-a: #322830; --mask-b: #1c1418; --overlay: rgba(14,10,12,0.65);
+  }
+  [data-theme="purple"]{
+    --bg: #16141f; --surface: #1e1c2a; --surface-2: #282636; --line: #3a3750;
+    --ink: #eceaf4; --ink-dim: #9a96b0; --gold: #a88fd4; --gold-dim: #6e5a9a;
+    --err: #d07070; --bomb: #e08a72;
+    --mine-bg: #2a2438; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
+    --mask-a: #282636; --mask-b: #16141f; --overlay: rgba(10,8,14,0.65);
+  }
+  [data-theme="midnight"]{
+    --bg: #0a0c12; --surface: #12151e; --surface-2: #1a1e2a; --line: #2a3040;
+    --ink: #e8eaf0; --ink-dim: #8890a4; --gold: #6a8fd4; --gold-dim: #4a649a;
+    --err: #c96a5a; --bomb: #e07a5f;
+    --mine-bg: #1a2030; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
+    --mask-a: #1a1e2a; --mask-b: #0a0c12; --overlay: rgba(4,6,10,0.7);
+  }
+  [data-theme="warm"]{
+    --bg: #fbf3ea; --surface: #fff8f0; --surface-2: #f3e4d4; --line: #e0c8b0;
+    --ink: #3a2a1c; --ink-dim: #8a6a50; --gold: #d4894a; --gold-dim: #c07838;
+    --err: #c0453a; --bomb: #d96b52;
+    --mine-bg: #f5dcc4; --bomb-bg: #fce8e2; --bomb-ink: #a94432;
+    --mask-a: #f0e0d0; --mask-b: #fbf3ea; --overlay: rgba(50,40,30,0.35);
   }
   *{ box-sizing:border-box; }
   body{
@@ -39,8 +81,15 @@
   .screen{
     flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;
     gap:22px; padding:24px; text-align:center;
+    min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
   .screen.active{ display:flex; }
+  /* 입장 화면: 내용이 길면 위에서부터 쌓고 휠 스크롤 */
+  #join.active{
+    justify-content:flex-start;
+    padding-top: max(28px, 4vh);
+    padding-bottom: 48px;
+  }
   .screen h1{ font-family:'Fraunces',serif; font-weight:700; font-size:2.1rem; margin:0; }
   .screen .tag{ color:var(--ink-dim); font-size:0.9rem; margin-top:-14px; max-width:340px; }
   .mask-badge{
@@ -75,29 +124,36 @@
     opacity:0.45; pointer-events:none; cursor:not-allowed;
   }
   #recentRooms.locked{ opacity:0.45; pointer-events:none; }
-  #mainAdminBtn, #entryLockToggleBtn, #roomListRefresh{
-    margin-top:4px; background:transparent; border:1px solid var(--line); color:var(--ink);
+  /* 관리자 모드: 메인 화면 우측 상단 고정 */
+  #mainAdminBtn{
+    position:fixed; top:16px; right:16px; z-index:6;
+    margin:0; width:auto; max-width:none;
+    background:var(--surface); border:1px solid var(--line); color:var(--ink);
     border-radius:10px; padding:8px 14px; font-size:0.78rem; cursor:pointer; font-family:inherit;
-    width:300px; max-width:100%;
+    box-shadow:0 4px 16px rgba(0,0,0,0.2);
   }
-  #mainAdminBtn:hover, #entryLockToggleBtn:hover, #roomListRefresh:hover{
-    border-color:var(--gold-dim); color:var(--gold);
-  }
+  #mainAdminBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
   #mainAdminBtn.is-on{
     border-color:var(--gold-dim); color:var(--gold); background:var(--mine-bg);
+  }
+  #entryLockToggleBtn, #roomListRefresh, #blockNewRoomsBtn{
+    background:transparent; border:1px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:8px 14px; font-size:0.78rem; cursor:pointer; font-family:inherit;
+    width:100%; max-width:100%;
+  }
+  #entryLockToggleBtn:hover, #roomListRefresh:hover, #blockNewRoomsBtn:hover{
+    border-color:var(--gold-dim); color:var(--gold);
   }
   #entryLockToggleBtn.is-locked, #blockNewRoomsBtn.is-locked{
     border-color:var(--bomb); color:var(--bomb-ink); background:var(--bomb-bg);
   }
-  #blockNewRoomsBtn{
-    margin-top:0; background:transparent; border:1px solid var(--line); color:var(--ink);
-    border-radius:10px; padding:8px 14px; font-size:0.78rem; cursor:pointer; font-family:inherit;
-    width:300px; max-width:100%;
-  }
-  #blockNewRoomsBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #blockNewRoomsBtn{ margin-top:0; }
   #mainAdminPanel{
-    display:none; width:300px; max-width:100%; flex-direction:column; gap:8px; margin-top:4px;
-    text-align:left;
+    display:none; position:fixed; top:56px; right:16px; z-index:6;
+    width:300px; max-width:calc(100vw - 32px); flex-direction:column; gap:8px;
+    text-align:left; padding:12px;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 8px 28px rgba(0,0,0,0.35);
   }
   #mainAdminPanel.open{ display:flex; }
   #mainAdminPanel .admin-title{
@@ -105,7 +161,7 @@
   }
   #roomListRefresh{ width:auto; margin:0; padding:3px 8px; font-size:0.68rem; }
   #roomList{
-    display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;
+    display:flex; flex-direction:column; gap:6px; max-height:min(280px, 50vh); overflow-y:auto;
   }
   #roomList:empty::after{
     content:'생성된 방이 없습니다'; color:var(--ink-dim); font-size:0.8rem;
@@ -146,6 +202,76 @@
     color:var(--bomb-ink); border-color:var(--bomb); background:var(--bomb-bg);
   }
   header .me{ font-size:0.78rem; color:var(--gold); border:1px solid var(--gold-dim); padding:5px 10px; border-radius:20px; white-space:nowrap; }
+  .header-right{
+    display:flex; align-items:center; gap:8px; flex-shrink:0; position:relative;
+  }
+  #adminSettingsBtn{
+    display:none; font-family:'Inter',sans-serif; font-weight:500; font-size:0.72rem;
+    background:var(--mine-bg); border:1px solid var(--gold-dim); color:var(--gold);
+    border-radius:20px; padding:5px 11px; cursor:pointer; line-height:1.3; white-space:nowrap;
+  }
+  #adminSettingsBtn.show{ display:inline-flex; align-items:center; gap:4px; }
+  #adminSettingsBtn:hover{ filter:brightness(1.08); }
+  #adminSettingsPanel{
+    display:none; position:absolute; top:calc(100% + 10px); right:0; z-index:25;
+    width:min(340px, calc(100vw - 24px)); max-height:min(72vh, 560px);
+    overflow-y:auto; text-align:left;
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:14px; box-shadow:0 12px 36px rgba(0,0,0,0.4);
+  }
+  #adminSettingsPanel.open{ display:flex; flex-direction:column; gap:12px; }
+  #adminSettingsPanel .asp-title{
+    font-family:'Fraunces',serif; font-weight:600; font-size:0.95rem; color:var(--ink);
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  #adminSettingsPanel .asp-title button{
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+    border-radius:8px; padding:3px 8px; font-size:0.7rem; cursor:pointer; font-family:inherit;
+  }
+  #adminSettingsPanel .asp-section{
+    border-top:1px solid var(--line); padding-top:10px;
+  }
+  #adminSettingsPanel .asp-label{
+    font-size:0.72rem; color:var(--gold); font-weight:600; margin-bottom:6px;
+  }
+  #adminSettingsPanel .asp-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;
+  }
+  #adminSettingsPanel .asp-row label{
+    font-size:0.78rem; color:var(--ink); min-width:88px; flex-shrink:0;
+  }
+  #adminSettingsPanel .asp-row input[type="number"],
+  #adminSettingsPanel .asp-row input[type="text"]{
+    flex:1; min-width:0; background:var(--surface-2); border:1px solid var(--line);
+    color:var(--ink); border-radius:8px; padding:6px 8px; font-size:0.8rem;
+    font-family:inherit; outline:none;
+  }
+  #adminSettingsPanel .asp-row input[type="range"]{
+    flex:1; min-width:80px; accent-color:var(--gold);
+  }
+  #adminSettingsPanel .asp-val{
+    font-size:0.72rem; color:var(--ink-dim); min-width:36px; text-align:right;
+  }
+  #adminSettingsPanel .asp-btns{
+    display:flex; flex-wrap:wrap; gap:6px;
+  }
+  #adminSettingsPanel .asp-btns button{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:8px; padding:6px 10px; font-size:0.74rem; cursor:pointer; font-family:inherit;
+  }
+  #adminSettingsPanel .asp-btns button:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #adminSettingsPanel .asp-btns button.on{
+    border-color:var(--gold-dim); color:var(--gold); background:var(--mine-bg);
+  }
+  #adminSettingsPanel .asp-btns button.danger{ color:var(--err); }
+  #adminSettingsPanel .asp-btns button.danger:hover{ border-color:var(--err); }
+  #adminSettingsPanel textarea{
+    width:100%; min-height:52px; resize:vertical; background:var(--surface-2);
+    border:1px solid var(--line); color:var(--ink); border-radius:8px;
+    padding:8px 10px; font-size:0.8rem; font-family:inherit; outline:none;
+  }
+  #adminSettingsPanel textarea:focus,
+  #adminSettingsPanel .asp-row input:focus{ border-color:var(--gold-dim); }
   #memberCountBtn, #fontSizeBtn, #backToMainBtn{
     font-family:'Inter',sans-serif; font-weight:500; font-size:0.72rem;
     background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
@@ -161,30 +287,34 @@
     padding:6px; box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:120px;
   }
   #fontSizeMenu.open{ display:flex; flex-direction:column; gap:2px; }
-  #fontSizeMenu button, #themeMenu button{
+  #fontSizeMenu button, #themeMenu button, #textThemeMenu button{
     background:var(--surface-2); border:1px solid transparent; color:var(--ink); text-align:left;
     padding:8px 12px; border-radius:8px; cursor:pointer; font-family:inherit;
     font-size:0.82rem; font-weight:500; white-space:nowrap;
   }
-  #fontSizeMenu button:hover, #themeMenu button:hover{
+  #fontSizeMenu button:hover, #themeMenu button:hover, #textThemeMenu button:hover{
     background:var(--mine-bg); color:var(--gold); border-color:var(--gold-dim);
   }
-  #fontSizeMenu button.active, #themeMenu button.active{
+  #fontSizeMenu button.active, #themeMenu button.active, #textThemeMenu button.active{
     background:var(--mine-bg); color:var(--gold); border:1px solid var(--gold-dim);
   }
   .theme-wrap{ position:relative; display:inline-flex; }
-  #themeBtn{
+  #themeBtn, #textThemeBtn{
     font-family:'Inter',sans-serif; font-weight:500; font-size:0.72rem;
     background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
     border-radius:20px; padding:3px 9px; cursor:pointer; line-height:1.3;
   }
-  #themeBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
-  #themeMenu{
+  #themeBtn:hover, #textThemeBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #themeMenu, #textThemeMenu{
     display:none; position:absolute; top:calc(100% + 8px); right:0; left:auto; z-index:20;
     background:var(--surface); border:1px solid var(--line); border-radius:12px;
-    padding:6px; box-shadow:0 8px 24px rgba(0,0,0,0.25); min-width:120px;
+    padding:6px; box-shadow:0 8px 24px rgba(0,0,0,0.25); min-width:130px;
   }
-  #themeMenu.open{ display:flex; flex-direction:column; gap:4px; }
+  #themeMenu.open, #textThemeMenu.open{ display:flex; flex-direction:column; gap:4px; }
+  #textThemeMenu button .swatch{
+    display:inline-block; width:10px; height:10px; border-radius:50%;
+    margin-right:6px; vertical-align:middle; border:1px solid var(--line);
+  }
   .unread-divider{
     display:flex; align-items:center; gap:10px; align-self:stretch; margin:6px 0;
     color:var(--gold); font-size:0.72rem; font-weight:500;
@@ -342,16 +472,44 @@
   .react-delete{ font-size:0.75rem; font-weight:700; }
   .react-delete:hover{ border-color:var(--err); color:var(--err); background:rgba(201,106,90,0.12); }
 
-  #recentRooms{
+  #recentRooms, #publicRooms{
     width:300px; max-width:100%; display:flex; flex-direction:column; gap:6px; margin-top:4px;
   }
   #recentRooms:empty{ display:none; }
-  #recentRooms .rtitle{ font-size:0.72rem; color:var(--ink-dim); text-align:left; }
+  #recentRooms .rtitle, #publicRooms .rtitle{
+    font-size:0.72rem; color:var(--ink-dim); text-align:left;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
   #recentRooms button{
     background:var(--surface); border:1px solid var(--line); color:var(--ink);
     border-radius:8px; padding:8px 12px; font-size:0.85rem; cursor:pointer; font-family:inherit; text-align:left;
   }
   #recentRooms button:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #publicRoomsRefresh{
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+    border-radius:6px; padding:2px 8px; font-size:0.68rem; cursor:pointer; font-family:inherit;
+  }
+  #publicRoomsRefresh:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #publicRoomList{
+    display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto;
+  }
+  #publicRoomList:empty::after{
+    content:'생성된 방이 없습니다 · 방 이름을 입력해 새로 만들 수 있어요';
+    color:var(--ink-dim); font-size:0.8rem; text-align:left;
+  }
+  .public-room-item{
+    display:flex; align-items:center; gap:8px; background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px; cursor:pointer;
+    text-align:left; width:100%; font-family:inherit; color:var(--ink);
+  }
+  .public-room-item:hover{ border-color:var(--gold-dim); }
+  .public-room-item.selected{ border-color:var(--gold); background:var(--mine-bg); }
+  .public-room-item .rlock{ flex-shrink:0; font-size:0.9rem; }
+  .public-room-item .rname{ flex:1; min-width:0; font-size:0.85rem; font-weight:500;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left;
+  }
+  .public-room-item .rcnt{ font-size:0.72rem; color:var(--ink-dim); flex-shrink:0; }
+  #publicRooms.locked{ opacity:0.45; pointer-events:none; }
   .msg-row{ display:flex; gap:8px; max-width:78%; }
   .msg-row.mine{ align-self:flex-end; flex-direction:row-reverse; gap:0; margin-top:-2px; }
   .msg-row.mine .avatar{ display:none; }
@@ -372,8 +530,34 @@
   .meta{ font-size:0.72rem; color:var(--ink-dim); display:flex; gap:6px; align-items:baseline; }
   .meta .memo{ color:var(--gold); }
   .meta .bomb-holder{ color:var(--bomb); font-weight:600; }
-  .bubble{ background:var(--surface); border:1px solid var(--line); padding:9px 13px; border-radius:14px; font-size:0.92rem; line-height:1.45; word-break:break-word; white-space:pre-wrap; }
-  .msg-row.mine .bubble{ background:var(--mine-bg); border-color:var(--gold-dim); }
+  .bubble{
+    background:var(--surface); border:1px solid var(--line);
+    color: var(--msg-ink, var(--ink));
+    padding:9px 13px; border-radius:14px; font-size:0.92rem; line-height:1.45;
+    word-break:break-word; white-space:pre-wrap;
+  }
+  .msg-row.mine .bubble{
+    background:var(--mine-bg); border-color:var(--gold-dim);
+    color: var(--msg-ink, var(--ink));
+  }
+  .bubble .msg-text{ color: inherit; }
+  /* 텍스트 테마 강제 적용 (플레이어 채팅만) */
+  [data-text-theme="white"] .msg-row .bubble,
+  [data-text-theme="white"] .msg-row .bubble .msg-text{ color:#ffffff !important; }
+  [data-text-theme="cream"] .msg-row .bubble,
+  [data-text-theme="cream"] .msg-row .bubble .msg-text{ color:#fff5e6 !important; }
+  [data-text-theme="gold"] .msg-row .bubble,
+  [data-text-theme="gold"] .msg-row .bubble .msg-text{ color:#f0c080 !important; }
+  [data-text-theme="mint"] .msg-row .bubble,
+  [data-text-theme="mint"] .msg-row .bubble .msg-text{ color:#8fe0b0 !important; }
+  [data-text-theme="sky"] .msg-row .bubble,
+  [data-text-theme="sky"] .msg-row .bubble .msg-text{ color:#90c8f5 !important; }
+  [data-text-theme="pink"] .msg-row .bubble,
+  [data-text-theme="pink"] .msg-row .bubble .msg-text{ color:#f0b0d0 !important; }
+  [data-text-theme="lavender"] .msg-row .bubble,
+  [data-text-theme="lavender"] .msg-row .bubble .msg-text{ color:#c8b0f5 !important; }
+  [data-text-theme="black"] .msg-row .bubble,
+  [data-text-theme="black"] .msg-row .bubble .msg-text{ color:#000000 !important; }
   .time{ font-size:0.65rem; color:var(--ink-dim); }
   .system-msg{ align-self:center; font-size:0.75rem; color:var(--ink-dim); padding:4px 0; }
   .system-msg.death{ color:var(--bomb); font-weight:600; }
@@ -573,13 +757,20 @@
       <span id="entryLockReason">관리자가 익명톡 입장을 잠갔습니다.</span>
     </div>
     <form id="joinForm">
-      <input id="roomInput" placeholder="방 이름 (같은 방 이름끼리 모여요)" maxlength="30" required />
-      <input id="nickInput" placeholder="익명 닉네임 (같은 방에 닉네임이 고정돼요)" maxlength="16" required />
-      <input id="roomPwInput" type="password" placeholder="방 비밀번호 (선택 · 새 방이면 설정됨)" maxlength="32" autocomplete="off" />
+      <input id="roomInput" placeholder="방 이름 (목록에서 선택하거나 직접 입력)" maxlength="30" required />
+      <input id="nickInput" placeholder="익명 닉네임 (같은 방에서 닉네임이 고정돼요)" maxlength="16" required />
+      <input id="roomPwInput" type="password" placeholder="방 비밀번호 (비밀방 · 새 방 설정)" maxlength="32" autocomplete="off" />
       <button type="submit" class="primary">입장하기</button>
     </form>
+    <div id="publicRooms">
+      <div class="rtitle">
+        <span>생성된 방</span>
+        <button type="button" id="publicRoomsRefresh">새로고침</button>
+      </div>
+      <div id="publicRoomList"></div>
+    </div>
     <div id="recentRooms"></div>
-    <div class="hint">다운받아서 바로 여는 것만으로 다른 사람들과 연결돼요. 별도 설정이 필요 없어요.</div>
+    <div class="hint">방 목록에서 선택하거나 이름을 입력해 입장하세요. 🔒 는 비밀번호가 있는 비밀방입니다.</div>
     <button type="button" id="mainAdminBtn">관리자 모드</button>
     <div id="mainAdminPanel">
       <button type="button" id="entryLockToggleBtn">🔒 서비스 잠금</button>
@@ -615,6 +806,26 @@
               <button type="button" data-theme="dark">다크</button>
               <button type="button" data-theme="light">화이트</button>
               <button type="button" data-theme="gray">그레이</button>
+              <button type="button" data-theme="ocean">오션</button>
+              <button type="button" data-theme="forest">포레스트</button>
+              <button type="button" data-theme="rose">로즈</button>
+              <button type="button" data-theme="purple">퍼플</button>
+              <button type="button" data-theme="midnight">미드나잇</button>
+              <button type="button" data-theme="warm">웜</button>
+            </div>
+          </span>
+          <span class="theme-wrap">
+            <button type="button" id="textThemeBtn" title="채팅 글씨 색">텍스트 테마</button>
+            <div id="textThemeMenu" role="menu">
+              <button type="button" data-text-theme="default"><span class="swatch" style="background:var(--ink)"></span>기본</button>
+              <button type="button" data-text-theme="white"><span class="swatch" style="background:#ffffff"></span>화이트</button>
+              <button type="button" data-text-theme="cream"><span class="swatch" style="background:#fff5e6"></span>크림</button>
+              <button type="button" data-text-theme="gold"><span class="swatch" style="background:#f0c080"></span>골드</button>
+              <button type="button" data-text-theme="mint"><span class="swatch" style="background:#8fe0b0"></span>민트</button>
+              <button type="button" data-text-theme="sky"><span class="swatch" style="background:#90c8f5"></span>스카이</button>
+              <button type="button" data-text-theme="pink"><span class="swatch" style="background:#f0b0d0"></span>핑크</button>
+              <button type="button" data-text-theme="lavender"><span class="swatch" style="background:#c8b0f5"></span>라벤더</button>
+              <button type="button" data-text-theme="black"><span class="swatch" style="background:#000000"></span>블랙</button>
             </div>
           </span>
         </div>
@@ -624,7 +835,109 @@
           <button type="button" id="roomLockBtn" class="room-meta-btn" style="display:none" title="방 잠금 (관리자)">잠금</button>
         </div>
       </div>
-      <div class="me" id="meBadge"></div>
+      <div class="header-right">
+        <button type="button" id="adminSettingsBtn" title="관리자 설정">⚙️ 설정</button>
+        <div id="adminSettingsPanel">
+          <div class="asp-title">
+            <span>관리자 설정</span>
+            <button type="button" id="adminSettingsClose">닫기</button>
+          </div>
+          <div class="asp-section">
+            <div class="asp-label">기능 토글</div>
+            <div class="asp-btns">
+              <button type="button" id="aspFunToggle">장난 기능</button>
+              <button type="button" id="aspFloorToggle">발언권 모드</button>
+              <button type="button" id="aspRoomLock">방 잠금</button>
+              <button type="button" id="aspClearChat" class="danger">청소</button>
+              <button type="button" id="aspHelp">명령어</button>
+              <button type="button" id="aspAdminOff" class="danger">관리자 종료</button>
+            </div>
+          </div>
+          <div class="asp-section">
+            <div class="asp-label">공지</div>
+            <textarea id="aspNotice" placeholder="상단 공지 내용 (비우면 제거)"></textarea>
+            <div class="asp-btns" style="margin-top:6px">
+              <button type="button" id="aspNoticeApply">공지 적용</button>
+              <button type="button" id="aspNoticeClear">공지 제거</button>
+            </div>
+          </div>
+          <div class="asp-section">
+            <div class="asp-label">닭 치기</div>
+            <div class="asp-row">
+              <label>쿨타임</label>
+              <input type="range" id="aspChickenCd" min="0" max="300" step="5" />
+              <span class="asp-val" id="aspChickenCdVal">60초</span>
+            </div>
+            <div class="asp-row">
+              <label>지속시간</label>
+              <input type="range" id="aspChickenDur" min="1" max="120" step="1" />
+              <span class="asp-val" id="aspChickenDurVal">10초</span>
+            </div>
+          </div>
+          <div class="asp-section">
+            <div class="asp-label">멍냥체</div>
+            <div class="asp-row">
+              <label>쿨타임</label>
+              <input type="range" id="aspPetCd" min="0" max="300" step="5" />
+              <span class="asp-val" id="aspPetCdVal">60초</span>
+            </div>
+            <div class="asp-row">
+              <label>지속시간</label>
+              <input type="range" id="aspPetDur" min="1" max="120" step="1" />
+              <span class="asp-val" id="aspPetDurVal">15초</span>
+            </div>
+          </div>
+          <div class="asp-section">
+            <div class="asp-label">폭탄</div>
+            <div class="asp-row">
+              <label>최소 초</label>
+              <input type="range" id="aspBombMin" min="5" max="300" step="5" />
+              <span class="asp-val" id="aspBombMinVal">30초</span>
+            </div>
+            <div class="asp-row">
+              <label>최대 초</label>
+              <input type="range" id="aspBombMax" min="5" max="600" step="5" />
+              <span class="asp-val" id="aspBombMaxVal">90초</span>
+            </div>
+            <div class="asp-row">
+              <label>전역 쿨타임</label>
+              <input type="range" id="aspBombCd" min="0" max="600" step="5" />
+              <span class="asp-val" id="aspBombCdVal">120초</span>
+            </div>
+            <div class="asp-row">
+              <label>사망 유령</label>
+              <input type="range" id="aspDeathMute" min="0" max="300" step="5" />
+              <span class="asp-val" id="aspDeathMuteVal">30초</span>
+            </div>
+            <div class="asp-row" style="flex-direction:column; align-items:stretch; gap:4px">
+              <label>사망 메시지</label>
+              <input type="text" id="aspDeathMsg" placeholder="{nick}님이 사망했습니다." maxlength="80" />
+            </div>
+            <div class="asp-btns">
+              <button type="button" id="aspDeathMsgApply">사망 메시지 적용</button>
+            </div>
+          </div>
+          <div class="asp-section">
+            <div class="asp-label">도배 방지</div>
+            <div class="asp-row">
+              <label>횟수</label>
+              <input type="range" id="aspSpamCount" min="2" max="20" step="1" />
+              <span class="asp-val" id="aspSpamCountVal">5회</span>
+            </div>
+            <div class="asp-row">
+              <label>시간 창</label>
+              <input type="range" id="aspSpamWindow" min="1" max="30" step="1" />
+              <span class="asp-val" id="aspSpamWindowVal">3초</span>
+            </div>
+            <div class="asp-row">
+              <label>정지 시간</label>
+              <input type="range" id="aspSpamMute" min="1" max="120" step="1" />
+              <span class="asp-val" id="aspSpamMuteVal">10초</span>
+            </div>
+          </div>
+        </div>
+        <div class="me" id="meBadge"></div>
+      </div>
     </header>
     <div id="noticeBar">
       <div id="noticeText"></div>
@@ -849,14 +1162,19 @@ const ADMIN_PASSWORD = "1183";
   }
   applyFontSize();
 
-  // 테마: dark / light / gray
-  const THEME_IDS = ['dark', 'light', 'gray'];
-  const THEME_LABELS = { dark: '다크', light: '화이트', gray: '그레이' };
-  let currentTheme = 'dark';
+  // 테마
+  const THEME_IDS = ['dark', 'light', 'gray', 'ocean', 'forest', 'rose', 'purple', 'midnight', 'warm'];
+  const THEME_LABELS = {
+    dark: '다크', light: '화이트', gray: '그레이',
+    ocean: '오션', forest: '포레스트', rose: '로즈',
+    purple: '퍼플', midnight: '미드나잇', warm: '웜'
+  };
+  let currentTheme = 'dark'; // 첫 접속 기본: 다크(검은색)
   try {
-    const savedTheme = localStorage.getItem('anontalk_theme') || 'dark';
-    if(THEME_IDS.indexOf(savedTheme) >= 0) currentTheme = savedTheme;
-  } catch(e){}
+    const savedTheme = localStorage.getItem('anontalk_theme');
+    if(savedTheme && THEME_IDS.indexOf(savedTheme) >= 0) currentTheme = savedTheme;
+    else currentTheme = 'dark';
+  } catch(e){ currentTheme = 'dark'; }
   function applyTheme(){
     document.documentElement.setAttribute('data-theme', currentTheme);
     const btn = document.getElementById('themeBtn');
@@ -877,6 +1195,72 @@ const ADMIN_PASSWORD = "1183";
     if(menu) menu.classList.remove('open');
   }
   applyTheme();
+
+  // 채팅 글씨 색 (텍스트 테마)
+  const TEXT_THEME_COLORS = {
+    default: null,
+    white: '#ffffff',
+    cream: '#fff5e6',
+    gold: '#f0c080',
+    mint: '#8fe0b0',
+    sky: '#90c8f5',
+    pink: '#f0b0d0',
+    lavender: '#c8b0f5',
+    black: '#000000'
+  };
+  const TEXT_THEME_LABELS = {
+    default: '기본', white: '화이트', cream: '크림', gold: '골드',
+    mint: '민트', sky: '스카이', pink: '핑크', lavender: '라벤더', black: '블랙'
+  };
+  let currentTextTheme = 'default';
+  try {
+    const savedTT = localStorage.getItem('anontalk_text_theme') || 'default';
+    if(Object.prototype.hasOwnProperty.call(TEXT_THEME_COLORS, savedTT)) currentTextTheme = savedTT;
+  } catch(e){}
+  function applyTextTheme(){
+    const color = TEXT_THEME_COLORS[currentTextTheme];
+    // html / body / chat / messages 모두에 적용
+    const root = document.documentElement;
+    if(currentTextTheme === 'default' || !color){
+      root.removeAttribute('data-text-theme');
+      root.style.removeProperty('--msg-ink');
+    } else {
+      root.setAttribute('data-text-theme', currentTextTheme);
+      root.style.setProperty('--msg-ink', color);
+    }
+    ['messages', 'chat'].forEach(function(id){
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(color){
+        el.style.setProperty('--msg-ink', color);
+        el.setAttribute('data-text-theme', currentTextTheme);
+      } else {
+        el.style.removeProperty('--msg-ink');
+        el.removeAttribute('data-text-theme');
+      }
+    });
+    // 이미 렌더된 버블에도 즉시 반영
+    document.querySelectorAll('#messages .msg-row .bubble').forEach(function(b){
+      if(color) b.style.color = color;
+      else b.style.color = '';
+    });
+    const btn = document.getElementById('textThemeBtn');
+    if(btn){
+      btn.title = '채팅 글씨 색 (' + (TEXT_THEME_LABELS[currentTextTheme] || currentTextTheme) + ')';
+    }
+    const menu = document.getElementById('textThemeMenu');
+    if(menu){
+      menu.querySelectorAll('button[data-text-theme]').forEach(function(b){
+        if(b.getAttribute('data-text-theme') === currentTextTheme) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+  }
+  function closeTextThemeMenu(){
+    const menu = document.getElementById('textThemeMenu');
+    if(menu) menu.classList.remove('open');
+  }
+  applyTextTheme();
 
   // 읽지 않음 구분선
   let readUpToKey = null;
@@ -933,6 +1317,7 @@ const ADMIN_PASSWORD = "1183";
     const reasonEl = document.getElementById('entryLockReason');
     const form = document.getElementById('joinForm');
     const recent = document.getElementById('recentRooms');
+    const publicRooms = document.getElementById('publicRooms');
     const toggleBtn = document.getElementById('entryLockToggleBtn');
     if(!banner || !form) return;
     if(entryLocked){
@@ -945,6 +1330,7 @@ const ADMIN_PASSWORD = "1183";
       if(reasonEl) reasonEl.textContent = reason;
       form.classList.add('locked');
       if(recent) recent.classList.add('locked');
+      if(publicRooms) publicRooms.classList.add('locked');
       if(toggleBtn){
         toggleBtn.textContent = '🔓 잠금 해제';
         toggleBtn.classList.add('is-locked');
@@ -953,6 +1339,7 @@ const ADMIN_PASSWORD = "1183";
       banner.classList.remove('active');
       form.classList.remove('locked');
       if(recent) recent.classList.remove('locked');
+      if(publicRooms) publicRooms.classList.remove('locked');
       if(toggleBtn){
         toggleBtn.textContent = '🔒 서비스 잠금';
         toggleBtn.classList.remove('is-locked');
@@ -975,6 +1362,89 @@ const ADMIN_PASSWORD = "1183";
     if(mainAdmin) loadRoomList();
   }
 
+  function countRoomMembers(data){
+    const pres = (data && data.presence) || {};
+    const specs = (data && data.spectators) || {};
+    let cnt = 0;
+    Object.keys(pres).forEach(function(uid){
+      if(pres[uid] && pres[uid].spectator) return;
+      if(specs[uid]) return;
+      cnt++;
+    });
+    return cnt;
+  }
+
+  function selectRoomForJoin(name, hasPassword){
+    const roomInput = document.getElementById('roomInput');
+    const nickInput = document.getElementById('nickInput');
+    const roomPwInput = document.getElementById('roomPwInput');
+    if(!roomInput) return;
+    roomInput.value = name;
+    roomInput.dispatchEvent(new Event('input'));
+    document.querySelectorAll('#publicRoomList .public-room-item').forEach(function(el){
+      if(el.getAttribute('data-room') === name) el.classList.add('selected');
+      else el.classList.remove('selected');
+    });
+    if(hasPassword && roomPwInput){
+      roomPwInput.focus();
+    } else if(nickInput && !nickInput.disabled){
+      nickInput.focus();
+    }
+  }
+
+  function loadPublicRooms(){
+    const list = document.getElementById('publicRoomList');
+    if(!list) return;
+    list.innerHTML = '<div style="color:var(--ink-dim);font-size:0.8rem;padding:4px 0;">불러오는 중…</div>';
+    firebase.database().ref('anontalk').once('value').then(function(snap){
+      const val = snap.val() || {};
+      const names = Object.keys(val).filter(function(k){ return k !== '_meta'; }).sort(function(a, b){
+        return a.localeCompare(b, 'ko');
+      });
+      list.innerHTML = '';
+      const current = (document.getElementById('roomInput') && document.getElementById('roomInput').value.trim()) || '';
+      names.forEach(function(name){
+        const data = val[name] || {};
+        const hasPw = !!(data.password);
+        const isLocked = !!data.locked;
+        const cnt = countRoomMembers(data);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'public-room-item' + (current === name ? ' selected' : '');
+        btn.setAttribute('data-room', name);
+        if(hasPw){
+          const lock = document.createElement('span');
+          lock.className = 'rlock';
+          lock.textContent = '🔒';
+          lock.title = '비밀번호 방';
+          btn.appendChild(lock);
+        } else {
+          const lock = document.createElement('span');
+          lock.className = 'rlock';
+          lock.textContent = '';
+          lock.style.width = '1.1em';
+          btn.appendChild(lock);
+        }
+        const rname = document.createElement('span');
+        rname.className = 'rname';
+        rname.textContent = name + (isLocked ? ' (입장 잠금)' : '');
+        rname.title = name;
+        const rcnt = document.createElement('span');
+        rcnt.className = 'rcnt';
+        rcnt.textContent = cnt + '명';
+        btn.appendChild(rname);
+        btn.appendChild(rcnt);
+        btn.addEventListener('click', function(){
+          selectRoomForJoin(name, hasPw);
+        });
+        list.appendChild(btn);
+      });
+    }).catch(function(err){
+      console.error(err);
+      list.innerHTML = '<div style="color:var(--err);font-size:0.8rem;">방 목록을 불러오지 못했어요</div>';
+    });
+  }
+
   function loadRoomList(){
     const list = document.getElementById('roomList');
     if(!list) return;
@@ -988,18 +1458,13 @@ const ADMIN_PASSWORD = "1183";
       if(names.length === 0) return;
       names.forEach(function(name){
         const data = val[name] || {};
-        const pres = data.presence || {};
-        let cnt = 0;
-        Object.keys(pres).forEach(function(uid){
-          if(pres[uid] && pres[uid].spectator) return;
-          if(data.spectators && data.spectators[uid]) return;
-          cnt++;
-        });
+        const hasPw = !!(data.password);
+        const cnt = countRoomMembers(data);
         const item = document.createElement('div');
         item.className = 'room-list-item';
         const rname = document.createElement('span');
         rname.className = 'rname';
-        rname.textContent = name;
+        rname.textContent = (hasPw ? '🔒 ' : '') + name;
         rname.title = name;
         const rcnt = document.createElement('span');
         rcnt.className = 'rcnt';
@@ -1036,6 +1501,7 @@ const ADMIN_PASSWORD = "1183";
     }).then(function(){
       removeRecentRoom(roomName);
       loadRoomList();
+      loadPublicRooms();
     }).catch(function(err){
       console.error(err);
       alert('방 삭제에 실패했습니다');
@@ -1179,6 +1645,11 @@ const ADMIN_PASSWORD = "1183";
       watchEntryLock();
       watchBlockNewRooms();
       renderRecentRooms();
+      loadPublicRooms();
+      const pubRefresh = document.getElementById('publicRoomsRefresh');
+      if(pubRefresh){
+        pubRefresh.addEventListener('click', function(){ loadPublicRooms(); });
+      }
     }catch(e){
       console.error(e);
       document.getElementById('errText').textContent = '연결에 실패했어요: ' + e.message;
@@ -1200,7 +1671,7 @@ const ADMIN_PASSWORD = "1183";
     } else {
       lockedNick = null;
       nickInput.disabled = false;
-      nickInput.placeholder = '익명 닉네임 (같은 방에 닉네임이 고정돼요)';
+      nickInput.placeholder = '익명 닉네임 (같은 방에서 닉네임이 고정돼요)';
     }
   });
 
@@ -1365,6 +1836,235 @@ const ADMIN_PASSWORD = "1183";
     const sub = document.getElementById('roomSub');
     if(sub) sub.textContent = connectionStatus + (isAdmin ? ' · 관리자 모드' : '');
     updateRoomMetaUI();
+    updateAdminSettingsBtn();
+  }
+
+  function updateAdminSettingsBtn(){
+    const btn = document.getElementById('adminSettingsBtn');
+    if(!btn) return;
+    if(isAdmin && room){
+      btn.classList.add('show');
+    } else {
+      btn.classList.remove('show');
+      closeAdminSettingsPanel();
+    }
+  }
+
+  function closeAdminSettingsPanel(){
+    const panel = document.getElementById('adminSettingsPanel');
+    if(panel) panel.classList.remove('open');
+  }
+
+  function openAdminSettingsPanel(){
+    if(!isAdmin) return;
+    syncAdminSettingsPanel();
+    const panel = document.getElementById('adminSettingsPanel');
+    if(panel) panel.classList.add('open');
+  }
+
+  function setRangeVal(id, valId, value, unit){
+    const el = document.getElementById(id);
+    const lab = document.getElementById(valId);
+    if(el) el.value = value;
+    if(lab) lab.textContent = value + (unit || '초');
+  }
+
+  function syncAdminSettingsPanel(){
+    setRangeVal('aspChickenCd', 'aspChickenCdVal', settings.chickenCooldown || 60);
+    setRangeVal('aspChickenDur', 'aspChickenDurVal', settings.chickenDuration || 10);
+    setRangeVal('aspPetCd', 'aspPetCdVal', settings.petCooldown || 60);
+    setRangeVal('aspPetDur', 'aspPetDurVal', settings.petDuration || 15);
+    setRangeVal('aspBombMin', 'aspBombMinVal', settings.bombMinSec || 30);
+    setRangeVal('aspBombMax', 'aspBombMaxVal', settings.bombMaxSec || 90);
+    setRangeVal('aspBombCd', 'aspBombCdVal', settings.bombCooldown || 120);
+    setRangeVal('aspDeathMute', 'aspDeathMuteVal', settings.deathMuteSec || 30);
+    setRangeVal('aspSpamCount', 'aspSpamCountVal', settings.spamCount || 5, '회');
+    setRangeVal('aspSpamWindow', 'aspSpamWindowVal', settings.spamWindowSec || 3);
+    setRangeVal('aspSpamMute', 'aspSpamMuteVal', settings.spamMuteSec || 10);
+
+    const deathMsg = document.getElementById('aspDeathMsg');
+    if(deathMsg) deathMsg.value = settings.deathMessage || '{nick}님이 사망했습니다.';
+    const notice = document.getElementById('aspNotice');
+    if(notice) notice.value = noticeText || '';
+
+    const funBtn = document.getElementById('aspFunToggle');
+    if(funBtn){
+      funBtn.classList.toggle('on', settings.funEnabled !== false);
+      funBtn.textContent = settings.funEnabled !== false ? '장난 기능 ON' : '장난 기능 OFF';
+    }
+    const floorBtn = document.getElementById('aspFloorToggle');
+    if(floorBtn){
+      floorBtn.classList.toggle('on', !!settings.floorEnabled);
+      floorBtn.textContent = settings.floorEnabled ? '발언권 ON' : '발언권 OFF';
+    }
+    const lockBtn = document.getElementById('aspRoomLock');
+    if(lockBtn){
+      lockBtn.classList.toggle('on', !!roomLocked);
+      lockBtn.textContent = roomLocked ? '방 잠금됨' : '방 잠금';
+    }
+  }
+
+  function settingsRef(){
+    return firebase.database().ref('anontalk/' + room + '/settings');
+  }
+
+  function bindAdminSettingsPanel(){
+    const panel = document.getElementById('adminSettingsPanel');
+    const btn = document.getElementById('adminSettingsBtn');
+    if(!panel || !btn) return;
+
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(panel.classList.contains('open')) closeAdminSettingsPanel();
+      else openAdminSettingsPanel();
+    });
+    document.getElementById('adminSettingsClose').addEventListener('click', function(e){
+      e.stopPropagation();
+      closeAdminSettingsPanel();
+    });
+    panel.addEventListener('click', function(e){ e.stopPropagation(); });
+    document.addEventListener('click', function(){ closeAdminSettingsPanel(); });
+
+    function bindRange(id, valId, key, unit, extra){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.addEventListener('input', function(){
+        const v = parseInt(el.value, 10);
+        const lab = document.getElementById(valId);
+        if(lab) lab.textContent = v + (unit || '초');
+      });
+      el.addEventListener('change', function(){
+        if(!isAdmin || !room) return;
+        let v = parseInt(el.value, 10);
+        if(isNaN(v)) return;
+        if(extra) v = extra(v);
+        const upd = {};
+        upd[key] = v;
+        settingsRef().update(upd).then(function(){
+          localSystemMsg(key + ' → ' + v + (unit || '초'));
+        }).catch(function(err){ console.error(err); });
+      });
+    }
+
+    bindRange('aspChickenCd', 'aspChickenCdVal', 'chickenCooldown');
+    bindRange('aspChickenDur', 'aspChickenDurVal', 'chickenDuration');
+    bindRange('aspPetCd', 'aspPetCdVal', 'petCooldown');
+    bindRange('aspPetDur', 'aspPetDurVal', 'petDuration');
+    bindRange('aspBombMin', 'aspBombMinVal', 'bombMinSec', '초', function(v){
+      const maxEl = document.getElementById('aspBombMax');
+      if(maxEl && v > parseInt(maxEl.value, 10)){
+        maxEl.value = v;
+        document.getElementById('aspBombMaxVal').textContent = v + '초';
+        settingsRef().update({ bombMaxSec: v });
+      }
+      return v;
+    });
+    bindRange('aspBombMax', 'aspBombMaxVal', 'bombMaxSec', '초', function(v){
+      const minEl = document.getElementById('aspBombMin');
+      if(minEl && v < parseInt(minEl.value, 10)){
+        minEl.value = v;
+        document.getElementById('aspBombMinVal').textContent = v + '초';
+        settingsRef().update({ bombMinSec: v });
+      }
+      return v;
+    });
+    bindRange('aspBombCd', 'aspBombCdVal', 'bombCooldown');
+    bindRange('aspDeathMute', 'aspDeathMuteVal', 'deathMuteSec');
+    bindRange('aspSpamCount', 'aspSpamCountVal', 'spamCount', '회');
+    bindRange('aspSpamWindow', 'aspSpamWindowVal', 'spamWindowSec');
+    bindRange('aspSpamMute', 'aspSpamMuteVal', 'spamMuteSec');
+
+    document.getElementById('aspFunToggle').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      const next = !(settings.funEnabled !== false);
+      settingsRef().child('funEnabled').set(next).then(function(){
+        if(!next) firebase.database().ref('anontalk/' + room + '/bomb').remove();
+        localSystemMsg(next ? '장난 기능을 켰습니다' : '장난 기능을 껐습니다');
+      });
+    });
+    document.getElementById('aspFloorToggle').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      const next = !settings.floorEnabled;
+      settingsRef().child('floorEnabled').set(next).then(function(){
+        if(next){
+          firebase.database().ref('anontalk/' + room + '/floorHolders/' + myId).set(true);
+          if(dbRef) dbRef.push({ type:'system', text:'✋ 발언권 모드가 켜졌습니다. 발언권이 있는 사람만 채팅할 수 있습니다.', ts: firebase.database.ServerValue.TIMESTAMP });
+          localSystemMsg('발언권 모드를 켰습니다');
+        } else {
+          firebase.database().ref('anontalk/' + room + '/floorHolders').remove();
+          firebase.database().ref('anontalk/' + room + '/floorRequests').remove();
+          if(dbRef) dbRef.push({ type:'system', text:'발언권 모드가 꺼졌습니다. 모두 채팅할 수 있습니다.', ts: firebase.database.ServerValue.TIMESTAMP });
+          localSystemMsg('발언권 모드를 껐습니다');
+        }
+      });
+    });
+    document.getElementById('aspRoomLock').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      const next = !roomLocked;
+      firebase.database().ref('anontalk/' + room + '/locked').set(next).then(function(){
+        localSystemMsg(next ? '방을 잠갔습니다 (신규 입장 차단)' : '방 잠금을 해제했습니다');
+        if(dbRef){
+          dbRef.push({
+            type: 'system',
+            text: next ? '🔒 관리자가 방을 잠갔습니다 (신규 입장 차단)' : '🔓 관리자가 방 잠금을 해제했습니다',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      });
+    });
+    document.getElementById('aspClearChat').addEventListener('click', function(){
+      if(!isAdmin || !dbRef) return;
+      if(!confirm('이 방의 대화 내용을 모두 삭제할까요?')) return;
+      dbRef.remove().then(function(){
+        dbRef.push({
+          type: 'system', text: '관리자가 이 방의 대화 내용을 삭제했습니다',
+          ts: firebase.database.ServerValue.TIMESTAMP, clearFlag: true
+        });
+        closeAdminSettingsPanel();
+      });
+    });
+    document.getElementById('aspHelp').addEventListener('click', function(){
+      closeAdminSettingsPanel();
+      openHelpPanel();
+    });
+    document.getElementById('aspAdminOff').addEventListener('click', function(){
+      if(!isAdmin) return;
+      isAdmin = false;
+      updateRoomSub();
+      render(false);
+      updateFloorUI();
+      updateRoomMetaUI();
+      closeAdminSettingsPanel();
+      localSystemMsg('관리자 모드를 종료했습니다');
+    });
+    document.getElementById('aspNoticeApply').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      const text = (document.getElementById('aspNotice').value || '').trim();
+      firebase.database().ref('anontalk/' + room + '/notice').set(text || null).then(function(){
+        localSystemMsg(text ? '공지를 설정했습니다' : '공지를 제거했습니다');
+      });
+    });
+    document.getElementById('aspNoticeClear').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      document.getElementById('aspNotice').value = '';
+      firebase.database().ref('anontalk/' + room + '/notice').set(null).then(function(){
+        localSystemMsg('공지를 제거했습니다');
+      });
+    });
+    document.getElementById('aspDeathMsgApply').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      const text = (document.getElementById('aspDeathMsg').value || '').trim();
+      if(!text){ alert('사망 메시지를 입력해 주세요'); return; }
+      settingsRef().child('deathMessage').set(text).then(function(){
+        localSystemMsg('사망 메시지를 설정했습니다');
+      });
+    });
+  }
+  // DOM 준비 후 바인딩
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindAdminSettingsPanel);
+  } else {
+    bindAdminSettingsPanel();
   }
 
   function updateRoomMetaUI(){
@@ -1523,6 +2223,8 @@ const ADMIN_PASSWORD = "1183";
         floorEnabled: !!s.floorEnabled
       };
       updateFloorUI();
+      const asp = document.getElementById('adminSettingsPanel');
+      if(asp && asp.classList.contains('open')) syncAdminSettingsPanel();
     });
 
     firebase.database().ref('anontalk/' + room + '/floorHolders').on('value', function(snapshot){
@@ -1539,6 +2241,11 @@ const ADMIN_PASSWORD = "1183";
     firebase.database().ref('anontalk/' + room + '/notice').on('value', function(snapshot){
       noticeText = (snapshot.val() || '') + '';
       updateNoticeBar();
+      const asp = document.getElementById('adminSettingsPanel');
+      if(asp && asp.classList.contains('open')){
+        const noticeEl = document.getElementById('aspNotice');
+        if(noticeEl && document.activeElement !== noticeEl) noticeEl.value = noticeText || '';
+      }
     });
 
     // 폭탄 상태
@@ -1564,6 +2271,8 @@ const ADMIN_PASSWORD = "1183";
     firebase.database().ref('anontalk/' + room + '/locked').on('value', function(snap){
       roomLocked = !!snap.val();
       updateRoomMetaUI();
+      const asp = document.getElementById('adminSettingsPanel');
+      if(asp && asp.classList.contains('open')) syncAdminSettingsPanel();
     });
 
     // 접속 인원 (presence)
@@ -3462,6 +4171,7 @@ const ADMIN_PASSWORD = "1183";
   document.getElementById('fontSizeBtn').addEventListener('click', function(e){
     e.stopPropagation();
     closeThemeMenu();
+    closeTextThemeMenu();
     const menu = document.getElementById('fontSizeMenu');
     if(!menu) return;
     menu.classList.toggle('open');
@@ -3480,6 +4190,7 @@ const ADMIN_PASSWORD = "1183";
   document.getElementById('themeBtn').addEventListener('click', function(e){
     e.stopPropagation();
     closeFontSizeMenu();
+    closeTextThemeMenu();
     const menu = document.getElementById('themeMenu');
     if(!menu) return;
     menu.classList.toggle('open');
@@ -3495,9 +4206,29 @@ const ADMIN_PASSWORD = "1183";
     applyTheme();
     closeThemeMenu();
   });
+  document.getElementById('textThemeBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    closeFontSizeMenu();
+    closeThemeMenu();
+    const menu = document.getElementById('textThemeMenu');
+    if(!menu) return;
+    menu.classList.toggle('open');
+  });
+  document.getElementById('textThemeMenu').addEventListener('click', function(e){
+    e.stopPropagation();
+    const btn = e.target.closest('button[data-text-theme]');
+    if(!btn) return;
+    const t = btn.getAttribute('data-text-theme');
+    if(!Object.prototype.hasOwnProperty.call(TEXT_THEME_COLORS, t)) return;
+    currentTextTheme = t;
+    try{ localStorage.setItem('anontalk_text_theme', currentTextTheme); }catch(e2){}
+    applyTextTheme();
+    closeTextThemeMenu();
+  });
   document.addEventListener('click', function(){
     closeFontSizeMenu();
     closeThemeMenu();
+    closeTextThemeMenu();
   });
   document.getElementById('memberClose').addEventListener('click', function(){
     memberPanel.classList.remove('active');

@@ -574,7 +574,7 @@
     </div>
     <form id="joinForm">
       <input id="roomInput" placeholder="방 이름 (같은 방 이름끼리 모여요)" maxlength="30" required />
-      <input id="nickInput" placeholder="익명 닉네임 (같은 방에서 닉네임이 고정돼요.)" maxlength="16" required />
+      <input id="nickInput" placeholder="익명 닉네임 (같은 방에 닉네임이 고정돼요)" maxlength="16" required />
       <input id="roomPwInput" type="password" placeholder="방 비밀번호 (선택 · 새 방이면 설정됨)" maxlength="32" autocomplete="off" />
       <button type="submit" class="primary">입장하기</button>
     </form>
@@ -1200,7 +1200,7 @@ const ADMIN_PASSWORD = "1183";
     } else {
       lockedNick = null;
       nickInput.disabled = false;
-      nickInput.placeholder = '익명 닉네임 (같은 방에서 닉네임이 고정돼요.)';
+      nickInput.placeholder = '익명 닉네임 (같은 방에 닉네임이 고정돼요)';
     }
   });
 

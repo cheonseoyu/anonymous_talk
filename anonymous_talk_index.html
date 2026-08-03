@@ -1,0 +1,3744 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>익명톡</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap');
+
+  :root, [data-theme="dark"]{
+    --bg: #14171c; --surface: #1c2128; --surface-2: #232a33; --line: #2c343f;
+    --ink: #e8e6df; --ink-dim: #8b93a1; --gold: #d4a373; --gold-dim: #8a6a4d;
+    --err: #c96a5a; --bomb: #e07a5f;
+    --mine-bg: #2a2115; --bomb-bg: #2a1814; --bomb-ink: #f0b8a8;
+    --mask-a: #2a323d; --mask-b: #14171c; --overlay: rgba(10,12,15,0.65);
+  }
+  [data-theme="light"]{
+    --bg: #f4f2ec; --surface: #ffffff; --surface-2: #ebe7de; --line: #cfc8ba;
+    --ink: #1c1915; --ink-dim: #5a5348; --gold: #9a6b2e; --gold-dim: #b8894a;
+    --err: #c0453a; --bomb: #d96b52;
+    --mine-bg: #f3e6d4; --bomb-bg: #fce8e2; --bomb-ink: #a94432;
+    --mask-a: #e8e4dc; --mask-b: #f4f2ec; --overlay: rgba(40,36,30,0.4);
+  }
+  [data-theme="gray"]{
+    --bg: #2b2f36; --surface: #363b44; --surface-2: #404651; --line: #4d5562;
+    --ink: #e6e4df; --ink-dim: #9aa1ad; --gold: #d4a373; --gold-dim: #9a7a58;
+    --err: #d07a6c; --bomb: #e08a72;
+    --mine-bg: #3d342c; --bomb-bg: #3d2a28; --bomb-ink: #f0b8a8;
+    --mask-a: #3a404a; --mask-b: #2b2f36; --overlay: rgba(15,17,20,0.6);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
+    height:100vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  #app{ flex:1; display:flex; flex-direction:column; min-height:0; }
+
+  .screen{
+    flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;
+    gap:22px; padding:24px; text-align:center;
+  }
+  .screen.active{ display:flex; }
+  .screen h1{ font-family:'Fraunces',serif; font-weight:700; font-size:2.1rem; margin:0; }
+  .screen .tag{ color:var(--ink-dim); font-size:0.9rem; margin-top:-14px; max-width:340px; }
+  .mask-badge{
+    width:54px; height:54px; border-radius:50%;
+    background:radial-gradient(circle at 32% 30%, var(--mask-a), var(--mask-b) 70%);
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 0 1px rgba(212,163,115,0.15), 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .mask-badge svg{ width:24px; height:24px; }
+  form{ display:flex; flex-direction:column; gap:12px; width:300px; }
+  input{
+    background:var(--surface); border:1px solid var(--line); color:var(--ink);
+    padding:11px 13px; border-radius:10px; font-size:0.92rem; font-family:inherit; outline:none;
+  }
+  input:focus{ border-color:var(--gold-dim); }
+  button.primary{
+    background:var(--gold); color:#1a1410; border:none; border-radius:10px;
+    padding:11px 14px; font-weight:600; font-size:0.92rem; cursor:pointer; font-family:inherit;
+  }
+  button.primary:hover{ filter:brightness(1.08); }
+  .hint{ font-size:0.76rem; color:var(--ink-dim); max-width:300px; line-height:1.5; }
+  .err{ font-size:0.85rem; color:var(--err); max-width:320px; line-height:1.6; }
+  #entryLockBanner{
+    display:none; width:300px; max-width:100%; padding:12px 14px; border-radius:12px;
+    background:var(--bomb-bg); border:1px solid var(--bomb); color:var(--bomb-ink);
+    font-size:0.85rem; line-height:1.5; text-align:left;
+  }
+  #entryLockBanner.active{ display:block; }
+  #entryLockBanner strong{ display:block; margin-bottom:4px; font-size:0.9rem; }
+  #joinForm.locked input, #joinForm.locked button.primary{
+    opacity:0.45; pointer-events:none; cursor:not-allowed;
+  }
+  #recentRooms.locked{ opacity:0.45; pointer-events:none; }
+  #mainAdminBtn, #entryLockToggleBtn, #roomListRefresh{
+    margin-top:4px; background:transparent; border:1px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:8px 14px; font-size:0.78rem; cursor:pointer; font-family:inherit;
+    width:300px; max-width:100%;
+  }
+  #mainAdminBtn:hover, #entryLockToggleBtn:hover, #roomListRefresh:hover{
+    border-color:var(--gold-dim); color:var(--gold);
+  }
+  #mainAdminBtn.is-on{
+    border-color:var(--gold-dim); color:var(--gold); background:var(--mine-bg);
+  }
+  #entryLockToggleBtn.is-locked, #blockNewRoomsBtn.is-locked{
+    border-color:var(--bomb); color:var(--bomb-ink); background:var(--bomb-bg);
+  }
+  #blockNewRoomsBtn{
+    margin-top:0; background:transparent; border:1px solid var(--line); color:var(--ink);
+    border-radius:10px; padding:8px 14px; font-size:0.78rem; cursor:pointer; font-family:inherit;
+    width:300px; max-width:100%;
+  }
+  #blockNewRoomsBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #mainAdminPanel{
+    display:none; width:300px; max-width:100%; flex-direction:column; gap:8px; margin-top:4px;
+    text-align:left;
+  }
+  #mainAdminPanel.open{ display:flex; }
+  #mainAdminPanel .admin-title{
+    font-size:0.72rem; color:var(--ink-dim); display:flex; align-items:center; justify-content:space-between;
+  }
+  #roomListRefresh{ width:auto; margin:0; padding:3px 8px; font-size:0.68rem; }
+  #roomList{
+    display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;
+  }
+  #roomList:empty::after{
+    content:'생성된 방이 없습니다'; color:var(--ink-dim); font-size:0.8rem;
+  }
+  .room-list-item{
+    display:flex; align-items:center; gap:8px; background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+  }
+  .room-list-item .rname{ flex:1; min-width:0; font-size:0.85rem; font-weight:500; color:var(--ink);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .room-list-item .rcnt{ font-size:0.72rem; color:var(--ink-dim); flex-shrink:0; }
+  .room-list-item .rdel{
+    flex-shrink:0; background:transparent; border:1px solid var(--line); color:var(--err);
+    border-radius:6px; padding:3px 8px; font-size:0.7rem; cursor:pointer; font-family:inherit;
+  }
+  .room-list-item .rdel:hover{ border-color:var(--err); background:rgba(201,106,90,0.12); }
+
+  #chat{ flex:1; display:none; flex-direction:column; min-height:0; }
+  header{
+    padding:14px 18px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--surface);
+  }
+  header .room .name{ font-family:'Fraunces',serif; font-weight:600; font-size:1.1rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  header .room .sub{
+    font-size:0.72rem; color:var(--ink-dim);
+    display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:2px;
+  }
+  header .room .sub #roomSub{ color:var(--ink-dim); }
+  .room-meta-btn{
+    font-family:'Inter',sans-serif; font-weight:500; font-size:0.68rem;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink-dim);
+    border-radius:12px; padding:2px 8px; cursor:pointer; line-height:1.3;
+  }
+  .room-meta-btn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  .room-meta-btn.has-pw{ color:var(--gold); border-color:var(--gold-dim); }
+  .room-meta-btn.is-locked{
+    color:var(--bomb-ink); border-color:var(--bomb); background:var(--bomb-bg);
+  }
+  header .me{ font-size:0.78rem; color:var(--gold); border:1px solid var(--gold-dim); padding:5px 10px; border-radius:20px; white-space:nowrap; }
+  #memberCountBtn, #fontSizeBtn, #backToMainBtn{
+    font-family:'Inter',sans-serif; font-weight:500; font-size:0.72rem;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:20px; padding:3px 9px; cursor:pointer; line-height:1.3;
+  }
+  #memberCountBtn:hover, #fontSizeBtn:hover, #backToMainBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #backToMainBtn{ padding:3px 10px; }
+  #fontSizeBtn{ min-width:28px; text-align:center; padding:3px 9px; }
+  .font-size-wrap{ position:relative; display:inline-flex; }
+  #fontSizeMenu{
+    display:none; position:absolute; top:calc(100% + 8px); left:0; z-index:20;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:6px; box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:120px;
+  }
+  #fontSizeMenu.open{ display:flex; flex-direction:column; gap:2px; }
+  #fontSizeMenu button, #themeMenu button{
+    background:var(--surface-2); border:1px solid transparent; color:var(--ink); text-align:left;
+    padding:8px 12px; border-radius:8px; cursor:pointer; font-family:inherit;
+    font-size:0.82rem; font-weight:500; white-space:nowrap;
+  }
+  #fontSizeMenu button:hover, #themeMenu button:hover{
+    background:var(--mine-bg); color:var(--gold); border-color:var(--gold-dim);
+  }
+  #fontSizeMenu button.active, #themeMenu button.active{
+    background:var(--mine-bg); color:var(--gold); border:1px solid var(--gold-dim);
+  }
+  .theme-wrap{ position:relative; display:inline-flex; }
+  #themeBtn{
+    font-family:'Inter',sans-serif; font-weight:500; font-size:0.72rem;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:20px; padding:3px 9px; cursor:pointer; line-height:1.3;
+  }
+  #themeBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #themeMenu{
+    display:none; position:absolute; top:calc(100% + 8px); right:0; left:auto; z-index:20;
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:6px; box-shadow:0 8px 24px rgba(0,0,0,0.25); min-width:120px;
+  }
+  #themeMenu.open{ display:flex; flex-direction:column; gap:4px; }
+  .unread-divider{
+    display:flex; align-items:center; gap:10px; align-self:stretch; margin:6px 0;
+    color:var(--gold); font-size:0.72rem; font-weight:500;
+  }
+  .unread-divider::before, .unread-divider::after{
+    content:''; flex:1; height:1px; background:var(--gold-dim); opacity:0.55;
+  }
+  #messages .bubble{ font-size: var(--msg-font-size, 0.92rem); }
+  #messages .meta{ font-size: calc(var(--msg-font-size, 0.92rem) * 0.78); }
+  #messages .time{ font-size: calc(var(--msg-font-size, 0.92rem) * 0.7); }
+  #messages .system-msg{ font-size: calc(var(--msg-font-size, 0.92rem) * 0.82); }
+  #messages .reply-quote{ font-size: calc(var(--msg-font-size, 0.92rem) * 0.82); }
+  #messages .react-badge{ font-size: calc(var(--msg-font-size, 0.92rem) * 0.78); }
+  #memberPanel{
+    display:none; position:fixed; inset:0; background:var(--overlay);
+    align-items:center; justify-content:center; z-index:12; padding:20px;
+  }
+  #memberPanel.active{ display:flex; }
+  #memberBox{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    width:100%; max-width:320px; max-height:70vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  #memberBox .mhead{ padding:16px 18px 10px; border-bottom:1px solid var(--line); }
+  #memberBox .mhead .t{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; }
+  #memberBox .mhead .s{ font-size:0.75rem; color:var(--ink-dim); margin-top:4px; }
+  #memberList{ overflow-y:auto; padding:10px 18px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .member-item{ display:flex; align-items:center; gap:10px; font-size:0.88rem; padding:6px 0; }
+  .member-item .dot{ width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .member-item .nick{ font-weight:500; }
+  .member-item .you{ font-size:0.72rem; color:var(--gold); margin-left:4px; }
+  #memberBox .mfoot{ padding:12px 18px; border-top:1px solid var(--line); text-align:right; }
+  #memberBox .mfoot button{ background:var(--gold); color:#1a1410; border:none; border-radius:10px; padding:9px 16px; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.85rem; }
+  #memberEmpty{ color:var(--ink-dim); font-size:0.85rem; padding:20px 0; text-align:center; }
+
+  #helpPanel{
+    display:none; position:fixed; inset:0; background:var(--overlay);
+    align-items:center; justify-content:center; z-index:13; padding:20px;
+  }
+  #helpPanel.active{ display:flex; }
+  #helpBox{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    width:100%; max-width:420px; max-height:80vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  #helpBox .mhead{ padding:16px 18px 10px; border-bottom:1px solid var(--line); }
+  #helpBox .mhead .t{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; color:var(--ink); }
+  #helpBox .mhead .s{ font-size:0.75rem; color:var(--ink-dim); margin-top:4px; }
+  #helpBody{
+    overflow-y:auto; padding:14px 18px; flex:1; color:var(--ink);
+    font-size:0.84rem; line-height:1.65; white-space:pre-wrap; word-break:break-word;
+  }
+  #helpBody .help-section{ color:var(--gold); font-weight:600; margin:10px 0 4px; }
+  #helpBody .help-section:first-child{ margin-top:0; }
+  #helpBody .help-status{ margin-top:12px; color:var(--gold); font-weight:500; }
+  #helpBox .mfoot{ padding:12px 18px; border-top:1px solid var(--line); text-align:right; }
+  #helpBox .mfoot button{
+    background:var(--gold); color:#1a1410; border:none; border-radius:10px;
+    padding:9px 16px; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.85rem;
+  }
+
+  /* 공지 / 폭탄 안내 바 (둥근 알약, 텍스트 길이만큼) */
+  #noticeBar{
+    display:none; margin:8px 12px 0; padding:6px 10px 6px 12px; font-size:0.78rem; text-align:left;
+    background:var(--mine-bg); border:1px solid var(--gold-dim); color:var(--gold);
+    line-height:1.45; align-items:center; gap:8px; border-radius:20px;
+    width:fit-content; max-width:calc(100% - 24px); align-self:flex-end;
+  }
+  #noticeBar.active{ display:inline-flex; }
+  #noticeBar.bomb-mode{
+    background:var(--bomb-bg); border-color:var(--bomb); color:var(--bomb-ink);
+  }
+  #noticeBar .bomb-icon{ margin-right:4px; }
+  #noticeText{ min-width:0; word-break:break-word; }
+  #noticeToggle{
+    flex-shrink:0; background:transparent; border:1px solid var(--gold-dim); color:var(--gold);
+    border-radius:14px; padding:3px 10px; font-size:0.68rem; cursor:pointer; font-family:inherit;
+  }
+  #noticeExpandBtn{
+    display:none; margin:8px 12px 0; align-self:flex-end;
+    background:var(--mine-bg); border:1px solid var(--gold-dim); color:var(--gold);
+    border-radius:14px; padding:3px 10px; font-size:0.68rem; cursor:pointer; font-family:inherit;
+    width:fit-content;
+  }
+  #noticeExpandBtn.show{ display:inline-flex; align-items:center; }
+
+  #messagesWrap{ flex:1; min-height:0; position:relative; display:flex; flex-direction:column; }
+  #messages{ flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:10px; --msg-font-size: 0.92rem; }
+  #scrollBottomBtn{
+    display:none; position:absolute; bottom:12px; right:16px;
+    background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:22px;
+    padding:8px 14px; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:inherit;
+    box-shadow:0 4px 16px rgba(0,0,0,0.35); z-index:4; white-space:nowrap;
+    align-items:center; gap:6px;
+  }
+  #scrollBottomBtn.show{ display:inline-flex; }
+  #scrollBottomBtn.has-unread{
+    background:var(--gold); color:#1a1410; border-color:var(--gold);
+  }
+  #scrollBottomBtn:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #scrollBottomBtn.has-unread:hover{ filter:brightness(1.06); color:#1a1410; }
+
+  #typingBar{
+    display:none; padding:6px 16px; font-size:0.75rem; color:var(--gold);
+    background:var(--surface); border-top:1px solid var(--line); min-height:0;
+  }
+  #typingBar.active{ display:block; }
+
+  #replyBar{
+    display:none; padding:8px 12px; background:var(--surface-2); border-top:1px solid var(--line);
+    align-items:center; gap:10px; font-size:0.78rem;
+  }
+  #replyBar.active{ display:flex; }
+  #replyBar .reply-preview{
+    flex:1; min-width:0; border-left:3px solid var(--gold-dim); padding-left:8px;
+    color:var(--ink-dim); cursor:pointer;
+  }
+  #replyBar .reply-preview .rn{ color:var(--gold); font-weight:600; font-size:0.72rem; }
+  #replyBar .reply-preview .rt{
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink-dim);
+  }
+  #replyCancel{
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+    border-radius:8px; padding:4px 10px; cursor:pointer; font-family:inherit; font-size:0.72rem;
+  }
+
+  #bombHoldAlert{
+    display:none; margin:8px auto; padding:8px 14px; font-size:0.78rem; text-align:center;
+    background:var(--bomb-bg); border:1px solid var(--bomb); color:var(--bomb-ink); font-weight:500;
+    border-radius:20px; width:fit-content; max-width:calc(100% - 24px);
+  }
+  #bombHoldAlert.active{ display:block; }
+
+  .msg-row.continued{ margin-top:-4px; }
+  .msg-row.continued .avatar{ visibility:hidden; }
+  .msg-row.mine.continued{ margin-top:-6px; }
+  .msg-row.highlight-flash .bubble{
+    animation: flashMsg 1.2s ease;
+  }
+  @keyframes flashMsg{
+    0%,100%{ box-shadow:none; }
+    30%{ box-shadow:0 0 0 2px var(--gold-dim); }
+  }
+  .reply-quote{
+    border-left:3px solid var(--gold-dim); padding:4px 8px; margin-bottom:6px;
+    font-size:0.75rem; color:var(--ink-dim); cursor:pointer; border-radius:0 6px 6px 0;
+    background:rgba(212,163,115,0.08);
+  }
+  .reply-quote .rq-nick{ color:var(--gold); font-weight:600; margin-right:4px; }
+  .reply-quote .rq-text{ opacity:0.9; }
+  .react-reply, .react-delete{
+    width:20px; height:20px; border-radius:50%; border:1px solid var(--line); background:var(--surface-2);
+    color:var(--ink-dim); font-size:0.7rem; line-height:1; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; padding:0; flex-shrink:0; font-family:inherit;
+  }
+  .react-reply:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  .react-delete{ font-size:0.75rem; font-weight:700; }
+  .react-delete:hover{ border-color:var(--err); color:var(--err); background:rgba(201,106,90,0.12); }
+
+  #recentRooms{
+    width:300px; max-width:100%; display:flex; flex-direction:column; gap:6px; margin-top:4px;
+  }
+  #recentRooms:empty{ display:none; }
+  #recentRooms .rtitle{ font-size:0.72rem; color:var(--ink-dim); text-align:left; }
+  #recentRooms button{
+    background:var(--surface); border:1px solid var(--line); color:var(--ink);
+    border-radius:8px; padding:8px 12px; font-size:0.85rem; cursor:pointer; font-family:inherit; text-align:left;
+  }
+  #recentRooms button:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  .msg-row{ display:flex; gap:8px; max-width:78%; }
+  .msg-row.mine{ align-self:flex-end; flex-direction:row-reverse; gap:0; margin-top:-2px; }
+  .msg-row.mine .avatar{ display:none; }
+  .msg-row.mine .bubble-col{ gap:1px; }
+  .msg-row.mine .bubble{ padding:7px 12px; }
+  .avatar{
+    width:30px; height:30px; border-radius:50%; flex-shrink:0; margin-top:2px;
+    display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:600; color:#14171c;
+  }
+  .avatar.clickable{ cursor:pointer; box-shadow:0 0 0 2px var(--bomb); animation: bombPulse 1.2s ease-in-out infinite; }
+  .avatar.clickable:hover{ filter:brightness(1.15); }
+  @keyframes bombPulse{
+    0%,100%{ box-shadow:0 0 0 2px var(--bomb); }
+    50%{ box-shadow:0 0 0 4px rgba(224,122,95,0.45); }
+  }
+  .bubble-col{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .msg-row.mine .bubble-col{ align-items:flex-end; }
+  .meta{ font-size:0.72rem; color:var(--ink-dim); display:flex; gap:6px; align-items:baseline; }
+  .meta .memo{ color:var(--gold); }
+  .meta .bomb-holder{ color:var(--bomb); font-weight:600; }
+  .bubble{ background:var(--surface); border:1px solid var(--line); padding:9px 13px; border-radius:14px; font-size:0.92rem; line-height:1.45; word-break:break-word; white-space:pre-wrap; }
+  .msg-row.mine .bubble{ background:var(--mine-bg); border-color:var(--gold-dim); }
+  .time{ font-size:0.65rem; color:var(--ink-dim); }
+  .system-msg{ align-self:center; font-size:0.75rem; color:var(--ink-dim); padding:4px 0; }
+  .system-msg.death{ color:var(--bomb); font-weight:600; }
+  .msg-row.ghost{ opacity:0.55; }
+  .msg-row.ghost .bubble{
+    background:transparent; border-color:#4a5560; color:#7a8490;
+  }
+  .msg-row.ghost .meta, .msg-row.ghost .time{ color:#5a6570; }
+
+  .bubble-line{
+    display:flex; align-items:flex-end; gap:6px; max-width:100%;
+  }
+  .msg-row.mine .bubble-line{ flex-direction:row-reverse; }
+  .bubble-line .bubble{ min-width:0; }
+  .react-row{
+    display:flex; align-items:center; gap:4px; flex-wrap:wrap; position:relative;
+    flex-shrink:0; align-self:flex-end; margin-bottom:2px;
+  }
+  .react-badge{
+    display:inline-flex; align-items:center; gap:3px; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:20px; padding:2px 7px; font-size:0.72rem; cursor:pointer; user-select:none; color:var(--ink);
+  }
+  .react-badge.mine-reacted{ border-color:var(--gold-dim); background:var(--mine-bg); }
+  .react-badge:hover{ border-color:var(--gold-dim); }
+  .react-plus{
+    width:20px; height:20px; border-radius:50%; border:1px solid var(--line); background:var(--surface-2);
+    color:var(--ink-dim); font-size:0.75rem; line-height:1; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; padding:0; flex-shrink:0;
+  }
+  .react-plus:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  .react-popup{
+    position:absolute; bottom:calc(100% + 4px); display:flex; gap:4px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:5px 6px; box-shadow:0 6px 18px rgba(0,0,0,0.4); z-index:5;
+    white-space:nowrap;
+  }
+  .msg-row.mine .react-popup{ right:0; left:auto; }
+  .msg-row:not(.mine) .react-popup{ left:0; right:auto; }
+  .react-popup button{
+    background:none; border:none; font-size:1.05rem; cursor:pointer; padding:3px 5px; border-radius:8px; line-height:1;
+  }
+  .react-popup button:hover{ background:var(--surface-2); }
+
+  #effectStatus{
+    display:none; margin:0 auto 8px; padding:8px 14px; font-size:0.76rem; color:var(--gold);
+    background:var(--mine-bg); border:1px solid var(--gold-dim); text-align:center; border-radius:20px;
+    width:fit-content; max-width:calc(100% - 24px);
+  }
+  #effectStatus.active{ display:block; }
+  #floorRequestBtn{
+    display:none; position:fixed; bottom:90px; right:18px; z-index:8;
+    width:76px; height:76px; border-radius:50%; border:3px solid var(--gold-dim);
+    background:var(--surface); color:var(--gold); font-size:2.4rem; cursor:pointer;
+    box-shadow:0 8px 28px rgba(0,0,0,0.4); align-items:center; justify-content:center;
+  }
+  #floorRequestBtn.show{ display:flex; }
+  #floorRequestBtn:hover{ filter:brightness(1.08); border-color:var(--gold); transform:scale(1.05); }
+  #floorRequestBtn.pending{ opacity:0.75; pointer-events:none; }
+  #floorAdminBar{
+    display:none; margin:8px 12px 0; padding:8px 12px; background:var(--surface-2);
+    border:1px solid var(--line); border-radius:12px; max-width:calc(100% - 24px);
+  }
+  #floorAdminBar.active{ display:block; }
+  #floorAdminBar .ftitle{ font-size:0.75rem; color:var(--gold); font-weight:600; margin-bottom:6px; }
+  #floorAdminBar .fsub{ font-size:0.7rem; color:var(--ink-dim); margin:8px 0 4px; }
+  #floorAdminList, #floorHolderList{ display:flex; flex-direction:column; gap:6px; }
+  .floor-req-item{
+    display:flex; align-items:center; gap:8px; font-size:0.82rem;
+  }
+  .floor-req-item .fnick{ flex:1; min-width:0; }
+  .floor-req-item button{
+    background:var(--gold); color:#1a1410; border:none; border-radius:8px;
+    padding:4px 10px; font-size:0.72rem; font-weight:600; cursor:pointer; font-family:inherit;
+  }
+  .floor-req-item button.deny, .floor-req-item button.revoke{
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+  }
+  .floor-req-item button.revoke{ border-color:var(--err); color:var(--err); }
+  .avatar.admin-clickable{
+    cursor:pointer; box-shadow:0 0 0 2px var(--gold-dim);
+  }
+  .avatar.admin-clickable:hover{ filter:brightness(1.12); }
+  #profilePanel{
+    display:none; position:fixed; inset:0; background:var(--overlay);
+    align-items:center; justify-content:center; z-index:14; padding:20px;
+  }
+  #profilePanel.active{ display:flex; }
+  #profileBox{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    width:100%; max-width:300px; display:flex; flex-direction:column; overflow:hidden;
+  }
+  #profileBox .mhead{ padding:16px 18px 10px; border-bottom:1px solid var(--line); }
+  #profileBox .mhead .t{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; }
+  #profileBox .mhead .s{ font-size:0.75rem; color:var(--ink-dim); margin-top:4px; }
+  #profileActions{ padding:12px 16px; display:flex; flex-direction:column; gap:8px; }
+  #profileActions button{
+    width:100%; text-align:left; background:var(--surface-2); border:1px solid var(--line);
+    color:var(--ink); border-radius:10px; padding:10px 12px; font-size:0.85rem;
+    cursor:pointer; font-family:inherit; font-weight:500;
+  }
+  #profileActions button:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  #profileActions button.danger{ color:var(--err); }
+  #profileActions button.danger:hover{ border-color:var(--err); }
+  #profileBox .mfoot{ padding:12px 18px; border-top:1px solid var(--line); text-align:right; }
+  #profileBox .mfoot button{
+    background:var(--gold); color:#1a1410; border:none; border-radius:10px;
+    padding:9px 16px; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.85rem;
+  }
+  #inputbar{ display:flex; gap:8px; padding:12px 14px; border-top:1px solid var(--line); background:var(--surface); }
+  #plusBtn{ width:40px; height:40px; border-radius:12px; border:1px solid var(--line); background:var(--surface-2); color:var(--gold); font-size:1.3rem; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  #plusBtn:hover{ border-color:var(--gold-dim); }
+  #textInput{ flex:1; background:var(--surface-2); border:1px solid var(--line); color:var(--ink); border-radius:12px; padding:10px 14px; font-size:0.92rem; font-family:inherit; outline:none; resize:none; max-height:100px; }
+  #textInput:focus{ border-color:var(--gold-dim); }
+  #sendBtn{ background:var(--gold); color:#1a1410; border:none; border-radius:12px; padding:0 18px; font-weight:600; cursor:pointer; font-family:inherit; flex-shrink:0; }
+  #sendBtn:disabled{ opacity:0.5; cursor:default; }
+  #imgPreviewBar{
+    display:none; padding:8px 14px; background:var(--surface-2); border-top:1px solid var(--line);
+    align-items:center; gap:10px;
+  }
+  #imgPreviewBar.active{ display:flex; }
+  #imgPreviewBar img{
+    width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid var(--line);
+  }
+  #imgPreviewBar .img-prev-info{ flex:1; min-width:0; font-size:0.78rem; color:var(--ink-dim); }
+  #imgPreviewCancel{
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+    border-radius:8px; padding:4px 10px; cursor:pointer; font-family:inherit; font-size:0.72rem;
+  }
+  .msg-image{
+    display:block; max-width:220px; max-height:260px; border-radius:10px; margin-top:4px;
+    cursor:pointer; object-fit:cover; border:1px solid var(--line);
+  }
+  .msg-image:first-child{ margin-top:0; }
+  .bubble.has-image{ padding:8px; }
+  .bubble.has-image .msg-text:empty{ display:none; }
+  #imgLightbox{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82);
+    align-items:center; justify-content:center; z-index:30; padding:20px; cursor:zoom-out;
+  }
+  #imgLightbox.active{ display:flex; }
+  #imgLightbox img{
+    max-width:min(960px, 100%); max-height:90vh; border-radius:8px; object-fit:contain;
+    box-shadow:0 8px 32px rgba(0,0,0,0.45); cursor:default;
+  }
+
+  #overlay{ display:none; position:fixed; inset:0; background:var(--overlay); align-items:center; justify-content:center; z-index:10; padding:20px; }
+  #memoPanel{ background:var(--surface); border:1px solid var(--line); border-radius:16px; width:100%; max-width:380px; max-height:70vh; display:flex; flex-direction:column; overflow:hidden; }
+  #memoPanel .mhead{ padding:16px 18px 10px; border-bottom:1px solid var(--line); }
+  #memoPanel .mhead .t{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; }
+  #memoPanel .mhead .s{ font-size:0.75rem; color:var(--ink-dim); margin-top:4px; }
+  #memoList{ overflow-y:auto; padding:10px 18px; display:flex; flex-direction:column; gap:12px; flex:1; }
+  .memo-item{ display:flex; flex-direction:column; gap:6px; }
+  .memo-item .who{ display:flex; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; }
+  .memo-item textarea{ background:var(--surface-2); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:8px 10px; font-size:0.85rem; font-family:inherit; resize:none; min-height:44px; outline:none; }
+  .memo-item textarea:focus{ border-color:var(--gold-dim); }
+  .memo-item .effect-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+  .memo-item .effect-actions button{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    border-radius:8px; padding:5px 9px; font-size:0.74rem; cursor:pointer; font-family:inherit;
+  }
+  .memo-item .effect-actions button:hover{ border-color:var(--gold-dim); color:var(--gold); }
+  .memo-item .effect-actions button .cd-text{ display:block; font-size:0.66rem; color:var(--ink-dim); margin-top:2px; }
+  .memo-item .effect-actions button .cd-text.ready{ color:var(--gold); }
+  #memoPanel .mfoot{ padding:12px 18px; border-top:1px solid var(--line); text-align:right; }
+  #memoPanel .mfoot button{ background:var(--gold); color:#1a1410; border:none; border-radius:10px; padding:9px 16px; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.85rem; }
+  #memoEmpty{ color:var(--ink-dim); font-size:0.85rem; padding:20px 0; text-align:center; }
+
+  ::-webkit-scrollbar{ width:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 연결 실패시에만 보이는 화면 -->
+  <div class="screen" id="errScreen">
+    <div class="mask-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c96a5a" stroke-width="1.5">
+        <path d="M3 9c2-2 5-3 9-3s7 1 9 3c0 5-2 9-5 10-1-1.5-2-2-4-2s-3 .5-4 2c-3-1-5-5-5-10z"/>
+      </svg>
+    </div>
+    <h1>연결할 수 없어요</h1>
+    <div class="err" id="errText">서버 설정이 비어 있어요. 파일 상단의 FIREBASE_CONFIG 값을 채워주세요.</div>
+  </div>
+
+  <!-- 입장 화면 -->
+  <div class="screen" id="join">
+    <div class="mask-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#d4a373" stroke-width="1.5">
+        <path d="M3 9c2-2 5-3 9-3s7 1 9 3c0 5-2 9-5 10-1-1.5-2-2-4-2s-3 .5-4 2c-3-1-5-5-5-10z"/>
+        <circle cx="8.5" cy="10" r="1" fill="#d4a373"/><circle cx="15.5" cy="10" r="1" fill="#d4a373"/>
+      </svg>
+    </div>
+    <h1>익명톡</h1>
+    <div class="tag">누구인지 모른 채, 편하게 이야기하는 방</div>
+    <div id="entryLockBanner">
+      <strong>🚫 지금은 입장할 수 없어요</strong>
+      <span id="entryLockReason">관리자가 익명톡 입장을 잠갔습니다.</span>
+    </div>
+    <form id="joinForm">
+      <input id="roomInput" placeholder="방 이름 (같은 방 이름끼리 모여요)" maxlength="30" required />
+      <input id="nickInput" placeholder="익명 닉네임 (같은 방에서 닉네임이 고정돼요.)" maxlength="16" required />
+      <input id="roomPwInput" type="password" placeholder="방 비밀번호 (선택 · 새 방이면 설정됨)" maxlength="32" autocomplete="off" />
+      <button type="submit" class="primary">입장하기</button>
+    </form>
+    <div id="recentRooms"></div>
+    <div class="hint">다운받아서 바로 여는 것만으로 다른 사람들과 연결돼요. 별도 설정이 필요 없어요.</div>
+    <button type="button" id="mainAdminBtn">관리자 모드</button>
+    <div id="mainAdminPanel">
+      <button type="button" id="entryLockToggleBtn">🔒 서비스 잠금</button>
+      <button type="button" id="blockNewRoomsBtn">🚫 신규 방 생성 금지</button>
+      <div class="admin-title">
+        <span>생성된 방</span>
+        <button type="button" id="roomListRefresh">새로고침</button>
+      </div>
+      <div id="roomList"></div>
+    </div>
+  </div>
+
+  <!-- 채팅 화면 -->
+  <div id="chat">
+    <header>
+      <div class="room">
+        <div class="name">
+          <button type="button" id="backToMainBtn" title="메인 화면으로">← 메인</button>
+          <span id="roomTitle"></span>
+          <button type="button" id="memberCountBtn" title="접속 인원 보기">0명</button>
+          <span class="font-size-wrap">
+            <button type="button" id="fontSizeBtn" title="메시지 글자 크기">크기</button>
+            <div id="fontSizeMenu" role="menu">
+              <button type="button" data-level="0">작게</button>
+              <button type="button" data-level="1">보통</button>
+              <button type="button" data-level="2">크게</button>
+              <button type="button" data-level="3">아주 크게</button>
+            </div>
+          </span>
+          <span class="theme-wrap">
+            <button type="button" id="themeBtn" title="방 테마">테마</button>
+            <div id="themeMenu" role="menu">
+              <button type="button" data-theme="dark">다크</button>
+              <button type="button" data-theme="light">화이트</button>
+              <button type="button" data-theme="gray">그레이</button>
+            </div>
+          </span>
+        </div>
+        <div class="sub">
+          <span id="roomSub">연결하는 중…</span>
+          <button type="button" id="roomPwBtn" class="room-meta-btn" style="display:none" title="방 비밀번호">비밀번호</button>
+          <button type="button" id="roomLockBtn" class="room-meta-btn" style="display:none" title="방 잠금 (관리자)">잠금</button>
+        </div>
+      </div>
+      <div class="me" id="meBadge"></div>
+    </header>
+    <div id="noticeBar">
+      <div id="noticeText"></div>
+      <button type="button" id="noticeToggle">접기</button>
+    </div>
+    <button type="button" id="noticeExpandBtn">📢 공지 펼치기</button>
+    <div id="messagesWrap">
+      <div id="messages"></div>
+      <button type="button" id="scrollBottomBtn" title="맨 아래로">↓ 맨 아래로</button>
+    </div>
+    <div id="typingBar"></div>
+    <div id="replyBar">
+      <div class="reply-preview" id="replyPreview">
+        <div class="rn" id="replyNick"></div>
+        <div class="rt" id="replyText"></div>
+      </div>
+      <button type="button" id="replyCancel">취소</button>
+    </div>
+    <div id="bombHoldAlert">💣 폭탄이 당신에게 넘어왔습니다! 프로필을 눌러 전달하세요</div>
+    <div id="floorAdminBar">
+      <div class="ftitle">✋ 발언권 관리</div>
+      <div class="fsub" id="floorReqLabel">요청</div>
+      <div id="floorAdminList"></div>
+      <div class="fsub" id="floorHoldLabel">보유 중</div>
+      <div id="floorHolderList"></div>
+    </div>
+    <div id="effectStatus"></div>
+    <button type="button" id="floorRequestBtn" title="발언권 요청">✋</button>
+    <div id="imgPreviewBar">
+      <img id="imgPreviewThumb" alt="미리보기" />
+      <div class="img-prev-info" id="imgPreviewInfo">이미지 첨부됨</div>
+      <button type="button" id="imgPreviewCancel">취소</button>
+    </div>
+    <div id="inputbar">
+      <button id="plusBtn" title="누군지 메모하기">+</button>
+      <textarea id="textInput" rows="1" placeholder="메시지 입력…"></textarea>
+      <button id="sendBtn">전송</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="imgLightbox"><img id="imgLightboxImg" alt="원본 이미지" /></div>
+
+<div id="overlay">
+  <div id="memoPanel">
+    <div class="mhead">
+      <div class="t">누군지 메모하기</div>
+      <div class="s">나만 볼 수 있어요. 다른 사람에게는 절대 보이지 않아요.</div>
+    </div>
+    <div id="memoList"></div>
+    <div class="mfoot"><button id="memoClose">닫기</button></div>
+  </div>
+</div>
+
+<div id="memberPanel">
+  <div id="memberBox">
+    <div class="mhead">
+      <div class="t">접속 인원</div>
+      <div class="s" id="memberPanelSub">현재 방에 있는 사람</div>
+    </div>
+    <div id="memberList"></div>
+    <div class="mfoot"><button type="button" id="memberClose">닫기</button></div>
+  </div>
+</div>
+
+<div id="helpPanel">
+  <div id="helpBox">
+    <div class="mhead">
+      <div class="t">명령어 목록</div>
+      <div class="s">채팅창에 입력해서 사용할 수 있는 명령어입니다</div>
+    </div>
+    <div id="helpBody"></div>
+    <div class="mfoot"><button type="button" id="helpClose">닫기</button></div>
+  </div>
+</div>
+
+<div id="profilePanel">
+  <div id="profileBox">
+    <div class="mhead">
+      <div class="t" id="profileTitle">프로필</div>
+      <div class="s" id="profileSub">관리 메뉴</div>
+    </div>
+    <div id="profileActions"></div>
+    <div class="mfoot"><button type="button" id="profileClose">닫기</button></div>
+  </div>
+</div>
+
+<script>
+/* =======================================================================
+   딱 한 번만 할 일: 아래 FIREBASE_CONFIG를 본인 Firebase 프로젝트 값으로
+   채우고 이 파일을 저장하세요. 그 다음부터는 이 파일을 받는 모든 사람이
+   설정 없이 바로 입장 화면으로 들어가서 대화할 수 있습니다.
+
+   값 얻는 법: console.firebase.google.com → 프로젝트 생성 →
+   Build > Realtime Database 만들기(테스트 모드) →
+   프로젝트 설정 > 내 앱 > </> 웹 앱 추가 → 여기 나오는 객체를 그대로 복사
+   ======================================================================= */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBgpI0iiqxBJyRLjDrBPEkW15P78Q4hq3k",
+  authDomain: "anonymity-34065.firebaseapp.com",
+  databaseURL: "https://anonymity-34065-default-rtdb.firebaseio.com",
+  projectId: "anonymity-34065",
+  storageBucket: "anonymity-34065.firebasestorage.app",
+  messagingSenderId: "26944254562",
+  appId: "1:26944254562:web:a2de8e31e1800cb04c173b"
+};
+
+/* 관리자 명령어 비밀번호. 채팅창에 "/어드민 1183" 을 입력하면 관리자 모드가
+   켜지고, 그 상태에서 아래 명령어들을 쓸 수 있어요.
+
+   기존:
+     /닉네임 변경 기존닉 새닉
+     /청소
+     /닭쿨타임 초  /닭지속 초
+     /멍냥쿨타임 초  /멍냥지속 초
+
+   추가:
+     /공지 메시지내용          → 채팅 상단 공지 띄우기 (빈 내용이면 공지 제거)
+     /사망메시지 텍스트        → 폭탄 터질 때 메시지 ({nick} 자리에 닉네임)
+                                 예: /사망메시지 {nick}님이 사망했습니다.
+     /사망시간 초              → 사망 후 유령 상태(남에게 메시지 안 보임) 시간
+                                 예: /사망시간 30
+     /폭탄시간 최소초 최대초   → 폭탄이 터지는 시간 범위
+                                 예: /폭탄시간 30 90
+     /폭탄쿨타임 초            → 폭탄 시작 후 전체 쿨타임
+     /도배제한 횟수 초         → N초 안에 M번 보내면 도배로 판단
+                                 예: /도배제한 5 3  (3초 안에 5번)
+     /도배시간 초              → 도배 적발 시 채팅 정지 시간
+                                 예: /도배시간 10
+     /기능 온                  → 닭치기·멍냥체·폭탄 등 장난 기능 켜기
+     /기능 오프                → 장난 기능 끄기 (채팅+메모+리액션만)
+     /강퇴 닉네임 초            → 강제 퇴장 + 재입장 차단 (예: /강퇴 홍길동 300)
+     /강퇴해제 닉네임          → 재입장 차단 해제
+     /채금 닉네임 초           → 해당 유저 채팅 금지 (예: /채금 홍길동 60)
+     /명령어                   → 명령어 목록 보기 (/도움말 동일)
+   ======================================================================= */
+const ADMIN_PASSWORD = "1183";
+/* ======================================================================= */
+
+(function(){
+  let room = '', myId = '', myNick = '';
+  let messages = [];
+  let memos = {};
+  let overrides = {};
+  let dbRef = null;
+  let isAdmin = false;
+  let connectionStatus = '연결하는 중…';
+  let lockedNick = null;
+  let reactions = {};
+  let openPicker = null;
+  const REACTION_EMOJIS = ['❤️', '👍', '👎', '💔'];
+  const MSG_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+  let effects = {};
+  let settings = {
+    chickenCooldown: 60, chickenDuration: 10,
+    petCooldown: 60, petDuration: 15,
+    bombMinSec: 30, bombMaxSec: 90,
+    bombCooldown: 120,
+    deathMuteSec: 30,
+    deathMessage: '{nick}님이 사망했습니다.',
+    spamCount: 5,
+    spamWindowSec: 3,
+    spamMuteSec: 10,
+    funEnabled: true,
+    floorEnabled: false
+  };
+  let floorHolders = {};   // { [userId]: true }
+  let floorRequests = {};  // { [userId]: { nick, at } }
+  let roomPassword = null; // 현재 방 비밀번호 (없으면 null)
+  let roomLocked = false;  // 관리자 방 잠금
+  let notifiedEffectKey = null;
+  let recentSendTs = [];     // 도배 감지용 최근 전송 시각
+  let spamMuteUntil = 0;     // 도배로 채팅 정지되는 시각
+
+  // 폭탄 상태
+  let bomb = null;          // { holderId, holderNick, explodeAt, startedBy }
+  let noticeText = '';      // 어드민 공지
+  let bombExplodedKey = null;
+  let bombTimer = null;
+  let globalBombCdUntil = 0; // 폭탄 전역 쿨타임 종료 시각
+  let presence = {};         // { [userId]: { nick, joinedAt, spectator? } }
+  let spectators = {};       // { [userId]: true }
+  let typingMap = {};        // { [userId]: { nick, at } }
+  let replyTarget = null;    // { key, nick, text }
+  let unreadCount = 0;
+  let stickToBottom = true;
+  let noticeCollapsed = false;
+  let typingTimer = null;
+  let lastTypingSent = 0;
+  let initialLoadDone = false;
+
+  // 메시지 글자 크기: 0=작게 1=보통 2=크게 3=아주 크게
+  const FONT_SIZES = ['0.80rem', '0.92rem', '1.05rem', '1.18rem'];
+  const FONT_NAME_LABELS = ['작게', '보통', '크게', '아주 크게'];
+  let fontSizeLevel = 1;
+  try {
+    const savedFs = parseInt(localStorage.getItem('anontalk_fontsize') || '1', 10);
+    if(savedFs >= 0 && savedFs < FONT_SIZES.length) fontSizeLevel = savedFs;
+  } catch(e){}
+  function applyFontSize(){
+    const messagesBox = document.getElementById('messages');
+    if(messagesBox) messagesBox.style.setProperty('--msg-font-size', FONT_SIZES[fontSizeLevel]);
+    const btn = document.getElementById('fontSizeBtn');
+    if(btn){
+      btn.textContent = '크기';
+      btn.title = '메시지 글자 크기 (' + FONT_NAME_LABELS[fontSizeLevel] + ')';
+    }
+    const menu = document.getElementById('fontSizeMenu');
+    if(menu){
+      menu.querySelectorAll('button[data-level]').forEach(function(b){
+        const lv = parseInt(b.getAttribute('data-level'), 10);
+        if(lv === fontSizeLevel) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+  }
+  function closeFontSizeMenu(){
+    const menu = document.getElementById('fontSizeMenu');
+    if(menu) menu.classList.remove('open');
+  }
+  applyFontSize();
+
+  // 테마: dark / light / gray
+  const THEME_IDS = ['dark', 'light', 'gray'];
+  const THEME_LABELS = { dark: '다크', light: '화이트', gray: '그레이' };
+  let currentTheme = 'dark';
+  try {
+    const savedTheme = localStorage.getItem('anontalk_theme') || 'dark';
+    if(THEME_IDS.indexOf(savedTheme) >= 0) currentTheme = savedTheme;
+  } catch(e){}
+  function applyTheme(){
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    const btn = document.getElementById('themeBtn');
+    if(btn){
+      btn.textContent = '테마';
+      btn.title = '방 테마 (' + (THEME_LABELS[currentTheme] || currentTheme) + ')';
+    }
+    const menu = document.getElementById('themeMenu');
+    if(menu){
+      menu.querySelectorAll('button[data-theme]').forEach(function(b){
+        if(b.getAttribute('data-theme') === currentTheme) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+  }
+  function closeThemeMenu(){
+    const menu = document.getElementById('themeMenu');
+    if(menu) menu.classList.remove('open');
+  }
+  applyTheme();
+
+  // 읽지 않음 구분선
+  let readUpToKey = null;
+  let showUnreadDivider = false;
+  let dividerHideTimer = null;
+
+  function getLastMsgKey(){
+    for(let i = messages.length - 1; i >= 0; i--){
+      if(messages[i] && messages[i]._key) return messages[i]._key;
+    }
+    return null;
+  }
+  function scheduleDividerHide(){
+    if(dividerHideTimer){ clearTimeout(dividerHideTimer); dividerHideTimer = null; }
+    if(!showUnreadDivider){
+      readUpToKey = getLastMsgKey();
+      return;
+    }
+    dividerHideTimer = setTimeout(function(){
+      showUnreadDivider = false;
+      readUpToKey = getLastMsgKey();
+      dividerHideTimer = null;
+      render(false);
+    }, 3000);
+  }
+
+  function uid(){ return 'u_' + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+  function hashColor(str){
+    let h = 0;
+    for(let i=0;i<str.length;i++){ h = str.charCodeAt(i) + ((h<<5)-h); }
+    return `hsl(${Math.abs(h)%360}, 55%, 58%)`;
+  }
+  function fmtTime(ts){
+    const d = new Date(ts);
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if(el) el.classList.add('active');
+  }
+
+  myId = localStorage.getItem('anontalk_myid') || uid();
+  localStorage.setItem('anontalk_myid', myId);
+
+  let entryLocked = false;
+  let entryLockInfo = null;
+  let blockNewRooms = false; // 신규 방 생성 금지
+  let mainAdmin = false;
+  let autoSpectatorJoin = false; // 관리자 모드로 입장 시 자동 관전
+
+  function applyEntryLockUI(){
+    const banner = document.getElementById('entryLockBanner');
+    const reasonEl = document.getElementById('entryLockReason');
+    const form = document.getElementById('joinForm');
+    const recent = document.getElementById('recentRooms');
+    const toggleBtn = document.getElementById('entryLockToggleBtn');
+    if(!banner || !form) return;
+    if(entryLocked){
+      banner.classList.add('active');
+      let reason = '관리자가 익명톡 입장을 잠갔습니다.';
+      if(entryLockInfo){
+        if(entryLockInfo.reason) reason = entryLockInfo.reason;
+        if(entryLockInfo.byNick) reason += ' (' + entryLockInfo.byNick + ')';
+      }
+      if(reasonEl) reasonEl.textContent = reason;
+      form.classList.add('locked');
+      if(recent) recent.classList.add('locked');
+      if(toggleBtn){
+        toggleBtn.textContent = '🔓 잠금 해제';
+        toggleBtn.classList.add('is-locked');
+      }
+    } else {
+      banner.classList.remove('active');
+      form.classList.remove('locked');
+      if(recent) recent.classList.remove('locked');
+      if(toggleBtn){
+        toggleBtn.textContent = '🔒 서비스 잠금';
+        toggleBtn.classList.remove('is-locked');
+      }
+    }
+  }
+
+  function applyMainAdminUI(){
+    const btn = document.getElementById('mainAdminBtn');
+    const panel = document.getElementById('mainAdminPanel');
+    if(btn){
+      btn.textContent = mainAdmin ? '관리자 모드 종료' : '관리자 모드';
+      if(mainAdmin) btn.classList.add('is-on');
+      else btn.classList.remove('is-on');
+    }
+    if(panel){
+      if(mainAdmin) panel.classList.add('open');
+      else panel.classList.remove('open');
+    }
+    if(mainAdmin) loadRoomList();
+  }
+
+  function loadRoomList(){
+    const list = document.getElementById('roomList');
+    if(!list) return;
+    list.innerHTML = '<div style="color:var(--ink-dim);font-size:0.8rem;padding:4px 0;">불러오는 중…</div>';
+    firebase.database().ref('anontalk').once('value').then(function(snap){
+      const val = snap.val() || {};
+      const names = Object.keys(val).filter(function(k){ return k !== '_meta'; }).sort(function(a, b){
+        return a.localeCompare(b, 'ko');
+      });
+      list.innerHTML = '';
+      if(names.length === 0) return;
+      names.forEach(function(name){
+        const data = val[name] || {};
+        const pres = data.presence || {};
+        let cnt = 0;
+        Object.keys(pres).forEach(function(uid){
+          if(pres[uid] && pres[uid].spectator) return;
+          if(data.spectators && data.spectators[uid]) return;
+          cnt++;
+        });
+        const item = document.createElement('div');
+        item.className = 'room-list-item';
+        const rname = document.createElement('span');
+        rname.className = 'rname';
+        rname.textContent = name;
+        rname.title = name;
+        const rcnt = document.createElement('span');
+        rcnt.className = 'rcnt';
+        rcnt.textContent = cnt + '명';
+        const rdel = document.createElement('button');
+        rdel.type = 'button';
+        rdel.className = 'rdel';
+        rdel.textContent = '삭제';
+        rdel.addEventListener('click', function(){
+          if(!mainAdmin) return;
+          if(!confirm('「' + name + '」 방을 삭제할까요?\n접속 중인 사용자도 퇴장됩니다.')) return;
+          deleteRoom(name);
+        });
+        item.appendChild(rname);
+        item.appendChild(rcnt);
+        item.appendChild(rdel);
+        list.appendChild(item);
+      });
+    }).catch(function(err){
+      console.error(err);
+      list.innerHTML = '<div style="color:var(--err);font-size:0.8rem;">방 목록을 불러오지 못했어요</div>';
+    });
+  }
+
+  function deleteRoom(roomName){
+    if(!roomName) return;
+    const ref = firebase.database().ref('anontalk/' + roomName);
+    // 접속자에게 삭제 알림 후 제거
+    ref.child('forceClose').set({
+      at: Date.now(),
+      reason: '방이 관리자에 의해 삭제되었습니다.'
+    }).then(function(){
+      return ref.remove();
+    }).then(function(){
+      removeRecentRoom(roomName);
+      loadRoomList();
+    }).catch(function(err){
+      console.error(err);
+      alert('방 삭제에 실패했습니다');
+    });
+  }
+
+  function watchEntryLock(){
+    try{
+      firebase.database().ref('anontalk/_meta/entryLock').on('value', function(snap){
+        const v = snap.val();
+        entryLocked = !!(v && v.locked);
+        entryLockInfo = entryLocked ? v : null;
+        applyEntryLockUI();
+        // 잠금 시 이미 방에 있는 사용자도 퇴장
+        if(entryLocked && room){
+          forceLeaveDueToServiceLock(v);
+        }
+      });
+    }catch(e){
+      console.error('entryLock watch error', e);
+    }
+  }
+
+  function applyBlockNewRoomsUI(){
+    const btn = document.getElementById('blockNewRoomsBtn');
+    if(!btn) return;
+    if(blockNewRooms){
+      btn.textContent = '🚫 신규 방 생성 금지 중';
+      btn.classList.add('is-locked');
+    } else {
+      btn.textContent = '🚫 신규 방 생성 금지';
+      btn.classList.remove('is-locked');
+    }
+  }
+
+  function watchBlockNewRooms(){
+    try{
+      firebase.database().ref('anontalk/_meta/blockNewRooms').on('value', function(snap){
+        const v = snap.val();
+        blockNewRooms = !!(v && v.blocked);
+        applyBlockNewRoomsUI();
+      });
+    }catch(e){
+      console.error('blockNewRooms watch error', e);
+    }
+  }
+
+  function forceLeaveDueToServiceLock(info){
+    if(leavingByKick) return;
+    leavingByKick = true;
+    try{
+      if(room){
+        firebase.database().ref('anontalk/' + room + '/presence/' + myId).remove();
+        firebase.database().ref('anontalk/' + room + '/typing/' + myId).remove();
+        if(autoSpectatorJoin){
+          firebase.database().ref('anontalk/' + room + '/spectators/' + myId).remove();
+        }
+      }
+    }catch(e){}
+    let msg = '서비스가 잠겨 방에서 퇴장되었습니다.';
+    if(info && info.reason) msg += '\n' + info.reason;
+    else if(info && info.byNick) msg += '\n(처리: ' + info.byNick + ')';
+    alert(msg);
+    location.reload();
+  }
+
+  function setEntryLock(locked, reason){
+    return firebase.database().ref('anontalk/_meta/entryLock').set({
+      locked: !!locked,
+      by: myId,
+      byNick: '관리자',
+      reason: reason || (locked ? '콘텐츠 외 시간에는 익명톡을 사용할 수 없습니다.' : ''),
+      at: Date.now()
+    });
+  }
+
+  document.getElementById('mainAdminBtn').addEventListener('click', function(){
+    if(mainAdmin){
+      mainAdmin = false;
+      applyMainAdminUI();
+      return;
+    }
+    const pw = prompt('관리자 비밀번호를 입력하세요');
+    if(pw === null) return;
+    if(pw !== ADMIN_PASSWORD){
+      alert('비밀번호가 올바르지 않습니다');
+      return;
+    }
+    mainAdmin = true;
+    applyMainAdminUI();
+  });
+
+  document.getElementById('roomListRefresh').addEventListener('click', function(){
+    if(!mainAdmin) return;
+    loadRoomList();
+  });
+
+  document.getElementById('entryLockToggleBtn').addEventListener('click', function(){
+    if(!mainAdmin){
+      alert('먼저 관리자 모드를 켜주세요');
+      return;
+    }
+    if(entryLocked){
+      setEntryLock(false).catch(function(err){
+        console.error(err);
+        alert('잠금 해제에 실패했습니다');
+      });
+    } else {
+      setEntryLock(true, '콘텐츠 외 시간에는 익명톡을 사용할 수 없습니다.').catch(function(err){
+        console.error(err);
+        alert('잠금에 실패했습니다');
+      });
+    }
+  });
+
+  document.getElementById('blockNewRoomsBtn').addEventListener('click', function(){
+    if(!mainAdmin){
+      alert('먼저 관리자 모드를 켜주세요');
+      return;
+    }
+    const next = !blockNewRooms;
+    firebase.database().ref('anontalk/_meta/blockNewRooms').set({
+      blocked: next,
+      by: myId,
+      at: Date.now()
+    }).then(function(){
+      // UI는 watch에서 갱신
+    }).catch(function(err){
+      console.error(err);
+      alert('설정에 실패했습니다');
+    });
+  });
+
+  if(!FIREBASE_CONFIG.databaseURL || !FIREBASE_CONFIG.apiKey){
+    showScreen('errScreen');
+  } else {
+    try{
+      firebase.initializeApp(FIREBASE_CONFIG);
+      firebase.database();
+      showScreen('join');
+      watchEntryLock();
+      watchBlockNewRooms();
+      renderRecentRooms();
+    }catch(e){
+      console.error(e);
+      document.getElementById('errText').textContent = '연결에 실패했어요: ' + e.message;
+      showScreen('errScreen');
+    }
+  }
+
+  const roomInput = document.getElementById('roomInput');
+  const nickInput = document.getElementById('nickInput');
+
+  roomInput.addEventListener('input', function(){
+    const r = roomInput.value.trim();
+    const saved = r ? localStorage.getItem('anontalk_nick_' + r + '_' + myId) : null;
+    if(saved){
+      lockedNick = saved;
+      nickInput.value = saved;
+      nickInput.disabled = true;
+      nickInput.placeholder = '이 방에서 사용 중인 닉네임이에요';
+    } else {
+      lockedNick = null;
+      nickInput.disabled = false;
+      nickInput.placeholder = '익명 닉네임 (같은 방에서 닉네임이 고정돼요.)';
+    }
+  });
+
+  // 최근 방 목록
+  function loadRecentRooms(){
+    try{ return JSON.parse(localStorage.getItem('anontalk_recent_rooms') || '[]'); }
+    catch(e){ return []; }
+  }
+  function saveRecentRoom(roomName){
+    let list = loadRecentRooms().filter(function(r){ return r !== roomName; });
+    list.unshift(roomName);
+    list = list.slice(0, 8);
+    localStorage.setItem('anontalk_recent_rooms', JSON.stringify(list));
+  }
+  function removeRecentRoom(roomName){
+    const list = loadRecentRooms().filter(function(r){ return r !== roomName; });
+    localStorage.setItem('anontalk_recent_rooms', JSON.stringify(list));
+    renderRecentRooms();
+  }
+  function renderRecentRooms(){
+    const box = document.getElementById('recentRooms');
+    if(!box) return;
+    const list = loadRecentRooms();
+    box.innerHTML = '';
+    if(list.length === 0) return;
+
+    // Firebase에 실제로 존재하는 방만 표시 (삭제된 방 제외)
+    const checks = list.map(function(name){
+      return firebase.database().ref('anontalk/' + name).once('value').then(function(snap){
+        return { name: name, exists: snap.exists() };
+      }).catch(function(){
+        return { name: name, exists: true }; // 조회 실패 시 일단 유지
+      });
+    });
+
+    Promise.all(checks).then(function(results){
+      const alive = results.filter(function(r){ return r.exists; }).map(function(r){ return r.name; });
+      // localStorage에서도 삭제된 방 정리
+      if(alive.length !== list.length){
+        localStorage.setItem('anontalk_recent_rooms', JSON.stringify(alive));
+      }
+      box.innerHTML = '';
+      if(alive.length === 0) return;
+      const title = document.createElement('div');
+      title.className = 'rtitle';
+      title.textContent = '최근 방';
+      box.appendChild(title);
+      alive.forEach(function(r){
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = r;
+        btn.addEventListener('click', function(){
+          roomInput.value = r;
+          roomInput.dispatchEvent(new Event('input'));
+          nickInput.focus();
+        });
+        box.appendChild(btn);
+      });
+    });
+  }
+  // Firebase 준비 후 호출
+  // renderRecentRooms()는 초기화 뒤에 실행
+
+  const roomPwInput = document.getElementById('roomPwInput');
+
+  function enterRoomAfterChecks(){
+    localStorage.setItem('anontalk_nick_' + room + '_' + myId, myNick);
+    saveRecentRoom(room);
+    showScreen('');
+    document.getElementById('chat').style.display = 'flex';
+    document.getElementById('roomTitle').textContent = room + ' 방';
+    document.getElementById('meBadge').textContent = '나: ' + myNick;
+    loadMemos();
+    connectRoom();
+  }
+
+  document.getElementById('joinForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    if(entryLocked){
+      let msg = '지금은 익명톡에 입장할 수 없습니다.';
+      if(entryLockInfo && entryLockInfo.reason) msg += '\n' + entryLockInfo.reason;
+      alert(msg);
+      return;
+    }
+    room = roomInput.value.trim();
+    myNick = lockedNick || nickInput.value.trim();
+    if(!room || !myNick) return;
+    const enteredPw = (roomPwInput && roomPwInput.value) ? roomPwInput.value : '';
+
+    // 재입장 차단 강퇴 여부 확인 → 방 비밀번호 확인
+    firebase.database().ref('anontalk/' + room + '/kicks/' + myId).once('value').then(function(snap){
+      const v = snap.val();
+      if(v && v.until && v.until > Date.now()){
+        const remain = Math.ceil((v.until - Date.now()) / 1000);
+        const min = Math.floor(remain / 60);
+        const sec = remain % 60;
+        const timeStr = min > 0 ? (min + '분 ' + sec + '초') : (sec + '초');
+        alert('이 방에서 강퇴되어 ' + timeStr + ' 동안 입장할 수 없습니다.' +
+          (v.byNick ? ('\n(처리: ' + v.byNick + ')') : ''));
+        return;
+      }
+      if(v){
+        snap.ref.remove().catch(function(){});
+      }
+
+      const roomRoot = 'anontalk/' + room;
+      return Promise.all([
+        firebase.database().ref(roomRoot + '/password').once('value'),
+        firebase.database().ref(roomRoot + '/locked').once('value'),
+        firebase.database().ref(roomRoot + '/presence').once('value'),
+        firebase.database().ref(roomRoot + '/messages').limitToFirst(1).once('value')
+      ]).then(function(results){
+        const savedPw = results[0].val();
+        const locked = !!(results[1].val());
+        const hasPeople = !!results[2].val();
+        const hasMsgs = !!results[3].val();
+        const roomExists = !!(savedPw || hasPeople || hasMsgs || locked);
+
+        // 관리자 방 잠금: 메인 관리자 모드가 아니면 입장 불가
+        if(locked && !mainAdmin){
+          alert('이 방은 관리자에 의해 잠겨 있어 입장할 수 없습니다.');
+          return;
+        }
+
+        // 신규 방 생성 금지 (기존 방 입장은 가능)
+        if(!roomExists && blockNewRooms && !mainAdmin){
+          alert('지금은 새 방을 만들 수 없습니다.\n기존 방 이름으로는 입장할 수 있어요.');
+          return;
+        }
+
+        if(savedPw){
+          if(enteredPw !== String(savedPw)){
+            alert('방 비밀번호가 올바르지 않습니다.');
+            return;
+          }
+          enterRoomAfterChecks();
+        } else if(!roomExists && enteredPw){
+          // 새 방 생성 시 비밀번호 설정
+          return firebase.database().ref(roomRoot + '/password').set(enteredPw).then(function(){
+            enterRoomAfterChecks();
+          });
+        } else {
+          enterRoomAfterChecks();
+        }
+      });
+    }).catch(function(err){
+      console.error(err);
+      // 조회 실패 시에도 입장은 허용 (비번 검증 불가)
+      enterRoomAfterChecks();
+    });
+  });
+
+  function loadMemos(){
+    try{ memos = JSON.parse(localStorage.getItem('anontalk_memo_' + room + '_' + myId) || '{}'); }
+    catch(e){ memos = {}; }
+  }
+  function saveMemos(){
+    localStorage.setItem('anontalk_memo_' + room + '_' + myId, JSON.stringify(memos));
+  }
+
+  function updateRoomSub(){
+    const sub = document.getElementById('roomSub');
+    if(sub) sub.textContent = connectionStatus + (isAdmin ? ' · 관리자 모드' : '');
+    updateRoomMetaUI();
+  }
+
+  function updateRoomMetaUI(){
+    const pwBtn = document.getElementById('roomPwBtn');
+    const lockBtn = document.getElementById('roomLockBtn');
+    const hasPw = !!(roomPassword && String(roomPassword).length);
+
+    if(pwBtn){
+      // 비밀번호 있는 방: 모두 표시 / 없는 방: 관리자만 (설정용)
+      if(hasPw || isAdmin){
+        pwBtn.style.display = '';
+        if(hasPw){
+          pwBtn.textContent = '비밀번호';
+          pwBtn.classList.add('has-pw');
+          pwBtn.title = '비밀번호 보기' + (isAdmin ? ' / 변경' : '');
+        } else {
+          pwBtn.textContent = '비밀번호 설정';
+          pwBtn.classList.remove('has-pw');
+          pwBtn.title = '이 방에 비밀번호 설정';
+        }
+      } else {
+        pwBtn.style.display = 'none';
+      }
+    }
+
+    if(lockBtn){
+      if(isAdmin){
+        lockBtn.style.display = '';
+        if(roomLocked){
+          lockBtn.textContent = '잠금됨';
+          lockBtn.classList.add('is-locked');
+          lockBtn.title = '방 잠금 해제';
+        } else {
+          lockBtn.textContent = '잠금';
+          lockBtn.classList.remove('is-locked');
+          lockBtn.title = '방 잠금 (새 입장 차단)';
+        }
+      } else {
+        lockBtn.style.display = 'none';
+      }
+    }
+  }
+
+  function connectRoom(){
+    dbRef = firebase.database().ref('anontalk/' + room + '/messages');
+    connectionStatus = '연결됨';
+    updateRoomSub();
+
+    // 메인 화면 관리자 모드로 입장 시: 관전 + 관리자 상태 유지
+    if(mainAdmin){
+      autoSpectatorJoin = true;
+      isAdmin = true;
+      updateRoomSub();
+      spectators[myId] = true;
+      firebase.database().ref('anontalk/' + room + '/spectators/' + myId).set(true).catch(function(err){
+        console.error('auto spectator error', err);
+      });
+    } else {
+      autoSpectatorJoin = false;
+    }
+
+    dbRef.limitToLast(300).on('child_added', function(snapshot){
+      const m = snapshot.val();
+      if(!m) return;
+      m._key = snapshot.key;
+      if(m.clearFlag){
+        messages = [];
+        readUpToKey = null;
+        showUnreadDivider = false;
+      }
+      messages.push(m);
+      const isMine = m.senderId === myId;
+      if(initialLoadDone && !stickToBottom && !isMine && m.type === 'msg'){
+        if(!showUnreadDivider){
+          if(!readUpToKey) readUpToKey = getLastMsgKey();
+          // 방금 추가된 메시지 직전이 구분선 위치
+          for(let i = messages.length - 2; i >= 0; i--){
+            if(messages[i] && messages[i]._key){ readUpToKey = messages[i]._key; break; }
+          }
+          showUnreadDivider = true;
+        }
+        unreadCount++;
+        updateScrollBottomBtn();
+        render(false);
+      } else {
+        render(!!initialLoadDone && stickToBottom);
+        if(stickToBottom){
+          unreadCount = 0;
+          updateScrollBottomBtn();
+          if(initialLoadDone) scheduleDividerHide();
+          else readUpToKey = getLastMsgKey();
+        }
+      }
+    });
+    // 초기 메시지 로드 후 맨 아래로
+    setTimeout(function(){
+      initialLoadDone = true;
+      readUpToKey = getLastMsgKey();
+      scrollToBottom();
+    }, 400);
+
+    // 강퇴 수신 (재입장 차단 기록은 유지)
+    firebase.database().ref('anontalk/' + room + '/kicks/' + myId).on('value', function(snap){
+      const v = snap.val();
+      if(!v) return;
+      if(v.until && v.until <= Date.now()){
+        snap.ref.remove().catch(function(){});
+        return;
+      }
+      // 세션 중 강퇴당한 경우만 퇴장 처리 (입장 차단은 join에서 처리)
+      if(!initialLoadDone) return;
+      const remainSec = v.until ? Math.max(1, Math.ceil((v.until - Date.now()) / 1000)) : 0;
+      forceLeaveRoom(v.byNick || '관리자', remainSec);
+    });
+
+    dbRef.on('child_removed', function(snapshot){
+      const key = snapshot.key;
+      messages = messages.filter(function(m){ return m._key !== key; });
+      render(false);
+    });
+
+    firebase.database().ref('anontalk/' + room + '/reactions').on('value', function(snapshot){
+      reactions = snapshot.val() || {};
+      render(false);
+    });
+
+    cleanupOldMessages();
+    setInterval(cleanupOldMessages, 60 * 60 * 1000);
+
+    firebase.database().ref('anontalk/' + room + '/overrides').on('value', function(snapshot){
+      overrides = snapshot.val() || {};
+      render(false);
+    });
+
+    firebase.database().ref('anontalk/' + room + '/effects').on('value', function(snapshot){
+      effects = snapshot.val() || {};
+      checkSelfEffect();
+    });
+
+    firebase.database().ref('anontalk/' + room + '/settings').on('value', function(snapshot){
+      const s = snapshot.val() || {};
+      settings = {
+        chickenCooldown: s.chickenCooldown || 60,
+        chickenDuration: s.chickenDuration || 10,
+        petCooldown: s.petCooldown || 60,
+        petDuration: s.petDuration || 15,
+        bombMinSec: s.bombMinSec || 30,
+        bombMaxSec: s.bombMaxSec || 90,
+        bombCooldown: s.bombCooldown || 120,
+        deathMuteSec: s.deathMuteSec || 30,
+        deathMessage: s.deathMessage || '{nick}님이 사망했습니다.',
+        spamCount: s.spamCount || 5,
+        spamWindowSec: s.spamWindowSec || 3,
+        spamMuteSec: s.spamMuteSec || 10,
+        funEnabled: s.funEnabled !== false,
+        floorEnabled: !!s.floorEnabled
+      };
+      updateFloorUI();
+    });
+
+    firebase.database().ref('anontalk/' + room + '/floorHolders').on('value', function(snapshot){
+      floorHolders = snapshot.val() || {};
+      updateFloorUI();
+    });
+
+    firebase.database().ref('anontalk/' + room + '/floorRequests').on('value', function(snapshot){
+      floorRequests = snapshot.val() || {};
+      updateFloorUI();
+    });
+
+    // 공지
+    firebase.database().ref('anontalk/' + room + '/notice').on('value', function(snapshot){
+      noticeText = (snapshot.val() || '') + '';
+      updateNoticeBar();
+    });
+
+    // 폭탄 상태
+    firebase.database().ref('anontalk/' + room + '/bomb').on('value', function(snapshot){
+      bomb = snapshot.val() || null;
+      updateNoticeBar();
+      render(false);
+      scheduleBombCheck();
+    });
+
+    // 전역 폭탄 쿨타임
+    firebase.database().ref('anontalk/' + room + '/bombCooldownUntil').on('value', function(snap){
+      globalBombCdUntil = snap.val() || 0;
+      updateCooldownLabels();
+    });
+
+    // 방 비밀번호 / 잠금
+    firebase.database().ref('anontalk/' + room + '/password').on('value', function(snap){
+      const v = snap.val();
+      roomPassword = (v !== null && v !== undefined && v !== '') ? String(v) : null;
+      updateRoomMetaUI();
+    });
+    firebase.database().ref('anontalk/' + room + '/locked').on('value', function(snap){
+      roomLocked = !!snap.val();
+      updateRoomMetaUI();
+    });
+
+    // 접속 인원 (presence)
+    const presenceRef = firebase.database().ref('anontalk/' + room + '/presence/' + myId);
+    function writeMyPresence(){
+      presenceRef.set({
+        nick: myNick,
+        joinedAt: firebase.database.ServerValue.TIMESTAMP,
+        spectator: isSpectatorUser(myId)
+      });
+    }
+    presenceRef.onDisconnect().remove();
+
+    firebase.database().ref('anontalk/' + room + '/presence').on('value', function(snapshot){
+      presence = snapshot.val() || {};
+      updateMemberCount();
+      if(document.getElementById('memberPanel').classList.contains('active')){
+        renderMemberList();
+      }
+    });
+
+    // 입력 중 표시
+    firebase.database().ref('anontalk/' + room + '/typing').on('value', function(snapshot){
+      typingMap = snapshot.val() || {};
+      updateTypingBar();
+    });
+    firebase.database().ref('anontalk/' + room + '/typing/' + myId).onDisconnect().remove();
+
+    // 관전 목록 구독 + 입장 처리
+    let spectatorsReady = false;
+    firebase.database().ref('anontalk/' + room + '/spectators').on('value', function(snapshot){
+      const prev = !!spectators[myId];
+      spectators = snapshot.val() || {};
+      const nowSpec = isSpectatorUser(myId);
+      writeMyPresence();
+      updateMemberCount();
+      if(document.getElementById('memberPanel').classList.contains('active')){
+        renderMemberList();
+      }
+      if(spectatorsReady){
+        if(nowSpec && !prev){
+          localSystemMsg('관전 모드입니다. 인원 목록에 표시되지 않으며, 채팅은 다른 사람에게 보이지 않습니다.');
+        } else if(!nowSpec && prev){
+          localSystemMsg('관전 모드가 해제되었습니다.');
+        }
+        render(false);
+      } else {
+        spectatorsReady = true;
+        // 관리자 자동 관전 또는 기존 관전: 입장 메시지 없음
+        if(!nowSpec && !autoSpectatorJoin){
+          dbRef.push({
+            type: 'system', text: myNick + '님이 들어왔습니다',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+        if(nowSpec || autoSpectatorJoin){
+          localSystemMsg('관전 모드로 입장했습니다. 인원 목록에 표시되지 않으며, 채팅은 다른 사람에게 보이지 않습니다.');
+        }
+      }
+    });
+
+    // 방 삭제 시 퇴장
+    firebase.database().ref('anontalk/' + room + '/forceClose').on('value', function(snap){
+      const v = snap.val();
+      if(!v || !initialLoadDone) return;
+      try{ removeRecentRoom(room); }catch(e){}
+      forceLeaveDueToServiceLock({
+        reason: (v && v.reason) || '방이 관리자에 의해 삭제되었습니다.'
+      });
+    });
+  }
+
+  function isSpectatorUser(uid){
+    if(!uid) return false;
+    if(spectators[uid]) return true;
+    if(presence[uid] && presence[uid].spectator) return true;
+    return false;
+  }
+
+  function updateMemberCount(){
+    const n = Object.keys(presence).filter(function(id){
+      return !isSpectatorUser(id);
+    }).length;
+    const btn = document.getElementById('memberCountBtn');
+    if(btn) btn.textContent = n + '명';
+    const sub = document.getElementById('memberPanelSub');
+    if(sub) sub.textContent = '현재 ' + n + '명 접속 중';
+  }
+
+  function renderMemberList(){
+    const list = document.getElementById('memberList');
+    if(!list) return;
+    const ids = Object.keys(presence).filter(function(id){
+      return !isSpectatorUser(id);
+    });
+    list.innerHTML = '';
+    if(ids.length === 0){
+      list.innerHTML = '<div id="memberEmpty">접속 중인 사람이 없어요</div>';
+      return;
+    }
+    // 닉네임 기준 정렬, 나는 맨 위
+    ids.sort(function(a, b){
+      if(a === myId) return -1;
+      if(b === myId) return 1;
+      const na = (overrides[a] || presence[a].nick || '').toLowerCase();
+      const nb = (overrides[b] || presence[b].nick || '').toLowerCase();
+      return na.localeCompare(nb, 'ko');
+    });
+    ids.forEach(function(id){
+      const p = presence[id] || {};
+      const nick = overrides[id] || p.nick || '익명';
+      const item = document.createElement('div');
+      item.className = 'member-item';
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      dot.style.background = hashColor(id);
+      const nickEl = document.createElement('span');
+      nickEl.className = 'nick';
+      nickEl.textContent = nick;
+      item.appendChild(dot);
+      item.appendChild(nickEl);
+      if(id === myId){
+        const you = document.createElement('span');
+        you.className = 'you';
+        you.textContent = '(나)';
+        item.appendChild(you);
+      }
+      if(id !== myId && memos[id]){
+        const memoHint = document.createElement('span');
+        memoHint.style.cssText = 'font-size:0.72rem;color:var(--gold);margin-left:auto;';
+        memoHint.textContent = memos[id];
+        item.appendChild(memoHint);
+      }
+      if(isAdmin && id !== myId){
+        item.style.cursor = 'pointer';
+        item.title = '관리 메뉴';
+        item.addEventListener('click', function(){
+          memberPanel.classList.remove('active');
+          openProfilePanel(id, nick);
+        });
+      }
+      list.appendChild(item);
+    });
+  }
+
+  function cleanupOldMessages(){
+    if(!dbRef) return;
+    const cutoff = Date.now() - MSG_TTL_MS;
+    dbRef.orderByChild('ts').endAt(cutoff).once('value').then(function(snapshot){
+      const updates = {};
+      snapshot.forEach(function(child){
+        updates[child.key] = null;
+      });
+      if(Object.keys(updates).length > 0){
+        dbRef.update(updates);
+        firebase.database().ref('anontalk/' + room + '/reactions').update(updates);
+      }
+    }).catch(function(err){ console.error('cleanup error', err); });
+  }
+
+  function checkSelfEffect(){
+    updateEffectStatus();
+    const eff = effects[myId];
+    const now = Date.now();
+    if(!eff || !eff.until || eff.until <= now){ return; }
+    const key = eff.type + ':' + (eff.style || '') + ':' + eff.until;
+    if(notifiedEffectKey === key) return;
+    notifiedEffectKey = key;
+    const remain = Math.ceil((eff.until - now) / 1000);
+    if(eff.type === 'chicken'){
+      localSystemMsg('🐔 닭 치기를 당했습니다! ' + remain + '초 동안 무슨 말을 해도 "꼬꼬닭"으로만 나가요.');
+    } else if(eff.type === 'pet'){
+      const suffix = eff.style === 'cat' ? '냥' : '멍';
+      localSystemMsg('🐾 ' + suffix + '체가 적용됐습니다! ' + remain + '초 동안 말 끝에 "' + suffix + '"이 붙어요.');
+    } else if(eff.type === 'mute'){
+      localSystemMsg('💀 폭탄에 맞아 사망했습니다! ' + remain + '초 동안 채팅은 되지만 다른 사람 눈에는 안 보여요.');
+    } else if(eff.type === 'chatban'){
+      localSystemMsg('🔇 채팅 금지되었습니다. ' + remain + '초 동안 메시지를 보낼 수 없어요.');
+    }
+  }
+
+  function localSystemMsg(text){
+    messages.push({ type:'system', text: text, ts: Date.now() });
+    render(true);
+  }
+
+  // ---------- 상단 공지 / 폭탄 안내 ----------
+  function updateNoticeBar(){
+    const bar = document.getElementById('noticeBar');
+    const textEl = document.getElementById('noticeText');
+    const toggleBtn = document.getElementById('noticeToggle');
+    const expandBtn = document.getElementById('noticeExpandBtn');
+    const bombAlert = document.getElementById('bombHoldAlert');
+
+    if(bomb && bomb.explodeAt && bomb.explodeAt > Date.now() && bomb.holderId === myId){
+      bombAlert.classList.add('active');
+    } else {
+      bombAlert.classList.remove('active');
+    }
+
+    // 폭탄 진행 중: 텍스트 길이만큼 알약
+    if(bomb && bomb.explodeAt && bomb.explodeAt > Date.now()){
+      const holder = bomb.holderNick || '누군가';
+      bar.className = 'active bomb-mode';
+      textEl.innerHTML = '<span class="bomb-icon">💣</span><strong>' + holder + '</strong>님이 폭탄을 들고 있어요 · 프로필을 눌러 전달하세요';
+      toggleBtn.style.display = 'none';
+      if(expandBtn) expandBtn.classList.remove('show');
+      return;
+    }
+
+    if(noticeText){
+      if(noticeCollapsed){
+        // 접힘: 공지 바 숨기고, 접기 자리 크기의 작은 '펼치기' 버튼만
+        bar.className = '';
+        textEl.textContent = '';
+        toggleBtn.style.display = 'none';
+        if(expandBtn) expandBtn.classList.add('show');
+      } else {
+        bar.className = 'active';
+        textEl.textContent = '📢 ' + noticeText;
+        toggleBtn.style.display = '';
+        toggleBtn.textContent = '접기';
+        if(expandBtn) expandBtn.classList.remove('show');
+      }
+      return;
+    }
+
+    bar.className = '';
+    textEl.textContent = '';
+    toggleBtn.style.display = 'none';
+    if(expandBtn) expandBtn.classList.remove('show');
+  }
+  setInterval(updateNoticeBar, 1000);
+
+  document.getElementById('noticeToggle').addEventListener('click', function(e){
+    e.stopPropagation();
+    noticeCollapsed = true;
+    updateNoticeBar();
+  });
+  document.getElementById('noticeExpandBtn').addEventListener('click', function(){
+    noticeCollapsed = false;
+    updateNoticeBar();
+  });
+
+  function updateTypingBar(){
+    const bar = document.getElementById('typingBar');
+    if(!bar) return;
+    const now = Date.now();
+    const names = [];
+    Object.keys(typingMap || {}).forEach(function(uid){
+      if(uid === myId) return;
+      if(isSpectatorUser(uid)) return;
+      const t = typingMap[uid];
+      if(!t) return;
+      // at이 없으면 존재하는 것만으로 표시. 있으면 기기 시차 감안해 30초까지 허용
+      if(typeof t.at === 'number' && now - t.at > 30000) return;
+      names.push(overrides[uid] || t.nick || '익명');
+    });
+    if(names.length === 0){
+      bar.classList.remove('active');
+      bar.textContent = '';
+      return;
+    }
+    bar.classList.add('active');
+    if(names.length === 1) bar.textContent = names[0] + ' 입력 중…';
+    else if(names.length === 2) bar.textContent = names[0] + ', ' + names[1] + ' 입력 중…';
+    else bar.textContent = names.length + '명이 입력 중…';
+  }
+  setInterval(updateTypingBar, 500);
+
+  // 입력창에 글자가 있는 동안 2초마다 하트비트 → 상대방에게 계속 "입력 중" 표시
+  setInterval(function(){
+    if(!room || !textInput) return;
+    if(textInput.value.trim()){
+      forceTypingOn();
+    }
+  }, 2000);
+
+  function forceTypingOn(){
+    if(!room) return;
+    const ref = firebase.database().ref('anontalk/' + room + '/typing/' + myId);
+    lastTypingSent = Date.now();
+    ref.set({ nick: myNick, at: Date.now() }).catch(function(err){
+      console.error('typing set error', err);
+    });
+  }
+
+  function setTyping(on){
+    if(!room) return;
+    const ref = firebase.database().ref('anontalk/' + room + '/typing/' + myId);
+    if(on){
+      const now = Date.now();
+      // 하트비트가 있으므로 여기서는 너무 잦은 중복만 막음
+      if(lastTypingSent && now - lastTypingSent < 500) return;
+      lastTypingSent = now;
+      ref.set({ nick: myNick, at: now }).catch(function(err){
+        console.error('typing set error', err);
+      });
+    } else {
+      lastTypingSent = 0;
+      ref.remove().catch(function(){});
+    }
+  }
+
+  function updateScrollBottomBtn(){
+    const btn = document.getElementById('scrollBottomBtn');
+    if(!btn) return;
+    if(stickToBottom){
+      btn.classList.remove('show', 'has-unread');
+      return;
+    }
+    btn.classList.add('show');
+    if(unreadCount > 0){
+      btn.classList.add('has-unread');
+      btn.textContent = unreadCount + '개 새 메시지 ↓';
+    } else {
+      btn.classList.remove('has-unread');
+      btn.textContent = '↓ 맨 아래로';
+    }
+  }
+
+  function scrollToBottom(){
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    stickToBottom = true;
+    unreadCount = 0;
+    updateScrollBottomBtn();
+    scheduleDividerHide();
+  }
+
+  let leavingByKick = false;
+  function forceLeaveRoom(byNick, remainSec){
+    if(leavingByKick) return;
+    leavingByKick = true;
+    try{
+      firebase.database().ref('anontalk/' + room + '/presence/' + myId).remove();
+      firebase.database().ref('anontalk/' + room + '/typing/' + myId).remove();
+    }catch(e){}
+    let msg = (byNick || '관리자') + '에 의해 강퇴되었습니다.';
+    if(remainSec && remainSec > 0){
+      const min = Math.floor(remainSec / 60);
+      const sec = remainSec % 60;
+      const timeStr = min > 0 ? (min + '분 ' + sec + '초') : (sec + '초');
+      msg += '\n' + timeStr + ' 동안 이 방에 다시 입장할 수 없습니다.';
+    }
+    alert(msg);
+    location.reload();
+  }
+
+  function findUserIdByNick(targetNick){
+    if(!targetNick) return null;
+    // presence 우선
+    const pIds = Object.keys(presence || {});
+    for(let i = 0; i < pIds.length; i++){
+      const id = pIds[i];
+      const nick = overrides[id] || (presence[id] && presence[id].nick) || '';
+      if(nick === targetNick) return id;
+    }
+    // 최근 메시지
+    for(let i = messages.length - 1; i >= 0; i--){
+      const m = messages[i];
+      if(m.type === 'msg' && (overrides[m.senderId] || m.nick) === targetNick){
+        return m.senderId;
+      }
+    }
+    return null;
+  }
+
+  // 강퇴 목록에서 닉으로 userId 찾기 (오프라인 포함)
+  function findKickedUserIdByNick(targetNick, kicksMap){
+    if(!targetNick || !kicksMap) return null;
+    const ids = Object.keys(kicksMap);
+    for(let i = 0; i < ids.length; i++){
+      const k = kicksMap[ids[i]];
+      if(!k) continue;
+      if(k.nick === targetNick) return ids[i];
+    }
+    return null;
+  }
+
+  function isChatBanned(){
+    const eff = effects[myId];
+    return !!(eff && eff.type === 'chatban' && eff.until && eff.until > Date.now());
+  }
+
+  function canSpeak(){
+    if(!settings.floorEnabled) return true;
+    if(isAdmin) return true;
+    if(floorHolders[myId]) return true;
+    return false;
+  }
+
+  function updateFloorUI(){
+    const handBtn = document.getElementById('floorRequestBtn');
+    const adminBar = document.getElementById('floorAdminBar');
+    const adminList = document.getElementById('floorAdminList');
+    const floorOn = !!settings.floorEnabled;
+
+    if(handBtn){
+      if(floorOn && !canSpeak()){
+        handBtn.classList.add('show');
+        if(floorRequests[myId]){
+          handBtn.classList.add('pending');
+          handBtn.title = '발언권 요청 중…';
+        } else {
+          handBtn.classList.remove('pending');
+          handBtn.title = '발언권 요청';
+        }
+      } else {
+        handBtn.classList.remove('show');
+        handBtn.classList.remove('pending');
+      }
+    }
+
+    const holderList = document.getElementById('floorHolderList');
+    const reqLabel = document.getElementById('floorReqLabel');
+    const holdLabel = document.getElementById('floorHoldLabel');
+    if(adminBar && adminList){
+      if(floorOn && isAdmin){
+        const reqIds = Object.keys(floorRequests || {});
+        const holdIds = Object.keys(floorHolders || {}).filter(function(uid){
+          return uid !== myId; // 관리자 본인 제외
+        });
+        adminBar.classList.add('active');
+        adminList.innerHTML = '';
+        if(holderList) holderList.innerHTML = '';
+
+        if(reqLabel) reqLabel.style.display = reqIds.length ? '' : 'none';
+        if(holdLabel) holdLabel.style.display = holdIds.length ? '' : 'none';
+
+        if(reqIds.length === 0 && holdIds.length === 0){
+          adminList.innerHTML = '<div style="font-size:0.78rem;color:var(--ink-dim);">요청·보유자가 없습니다</div>';
+        }
+
+        reqIds.forEach(function(uid){
+          const req = floorRequests[uid] || {};
+          const nick = req.nick || (presence[uid] && presence[uid].nick) || '익명';
+          const row = document.createElement('div');
+          row.className = 'floor-req-item';
+          const nameEl = document.createElement('span');
+          nameEl.className = 'fnick';
+          nameEl.textContent = '✋ ' + nick;
+          const ok = document.createElement('button');
+          ok.type = 'button';
+          ok.textContent = '수락';
+          ok.addEventListener('click', function(){
+            firebase.database().ref('anontalk/' + room + '/floorHolders/' + uid).set(true);
+            firebase.database().ref('anontalk/' + room + '/floorRequests/' + uid).remove();
+            if(dbRef){
+              dbRef.push({
+                type: 'system',
+                text: '✋ ' + nick + '님에게 발언권이 부여되었습니다',
+                ts: firebase.database.ServerValue.TIMESTAMP
+              });
+            }
+          });
+          const no = document.createElement('button');
+          no.type = 'button';
+          no.className = 'deny';
+          no.textContent = '거절';
+          no.addEventListener('click', function(){
+            firebase.database().ref('anontalk/' + room + '/floorRequests/' + uid).remove();
+          });
+          row.appendChild(nameEl);
+          row.appendChild(ok);
+          row.appendChild(no);
+          adminList.appendChild(row);
+        });
+
+        holdIds.forEach(function(uid){
+          const nick = overrides[uid] || (presence[uid] && presence[uid].nick) || '익명';
+          const row = document.createElement('div');
+          row.className = 'floor-req-item';
+          const nameEl = document.createElement('span');
+          nameEl.className = 'fnick';
+          nameEl.textContent = '🎤 ' + nick;
+          const rev = document.createElement('button');
+          rev.type = 'button';
+          rev.className = 'revoke';
+          rev.textContent = '회수';
+          rev.addEventListener('click', function(){
+            firebase.database().ref('anontalk/' + room + '/floorHolders/' + uid).remove();
+            firebase.database().ref('anontalk/' + room + '/floorRequests/' + uid).remove();
+            if(dbRef){
+              dbRef.push({
+                type: 'system',
+                text: '✋ ' + nick + '님의 발언권이 회수되었습니다',
+                ts: firebase.database.ServerValue.TIMESTAMP
+              });
+            }
+          });
+          row.appendChild(nameEl);
+          row.appendChild(rev);
+          if(holderList) holderList.appendChild(row);
+        });
+      } else {
+        adminBar.classList.remove('active');
+      }
+    }
+
+    // 입력창 상태
+    if(textInput){
+      if(floorOn && !canSpeak()){
+        if(!isChatBanned() && spamMuteUntil <= Date.now()){
+          textInput.placeholder = '발언권이 필요합니다 · ✋ 버튼을 눌러 요청하세요';
+        }
+      }
+    }
+  }
+
+  function requestFloor(){
+    if(!settings.floorEnabled || canSpeak() || !room) return;
+    if(floorRequests[myId]) return;
+    firebase.database().ref('anontalk/' + room + '/floorRequests/' + myId).set({
+      nick: myNick,
+      at: Date.now()
+    });
+    localSystemMsg('발언권을 요청했습니다. 관리자 수락을 기다려 주세요.');
+  }
+
+  function openProfilePanel(targetId, targetNick){
+    if(!isAdmin || !targetId || targetId === myId) return;
+    const panel = document.getElementById('profilePanel');
+    const title = document.getElementById('profileTitle');
+    const sub = document.getElementById('profileSub');
+    const actions = document.getElementById('profileActions');
+    if(!panel || !actions) return;
+    const nick = targetNick || overrides[targetId] || (presence[targetId] && presence[targetId].nick) || '익명';
+    if(title) title.textContent = nick;
+    if(sub) sub.textContent = '관리 메뉴';
+    actions.innerHTML = '';
+
+    function addBtn(label, className, fn){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      if(className) b.className = className;
+      b.addEventListener('click', function(){
+        fn();
+        closeProfilePanel();
+      });
+      actions.appendChild(b);
+    }
+
+    addBtn('🚫 강퇴', 'danger', function(){
+      const secStr = prompt(nick + '님 강퇴 시간(초)', '60');
+      if(secStr === null) return;
+      const sec = parseInt(secStr, 10);
+      if(isNaN(sec) || sec < 1){
+        alert('올바른 초를 입력해 주세요');
+        return;
+      }
+      const until = Date.now() + sec * 1000;
+      firebase.database().ref('anontalk/' + room + '/kicks/' + targetId).set({
+        by: myId, byNick: myNick, nick: nick, at: Date.now(), until: until
+      });
+      firebase.database().ref('anontalk/' + room + '/presence/' + targetId).remove();
+      const min = Math.floor(sec / 60);
+      const rem = sec % 60;
+      const timeStr = min > 0 ? (min + '분' + (rem ? ' ' + rem + '초' : '')) : (sec + '초');
+      if(dbRef){
+        dbRef.push({
+          type: 'system',
+          text: '🚫 ' + nick + '님이 관리자에 의해 강퇴되었습니다 (' + timeStr + ' 재입장 차단)',
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+      localSystemMsg(nick + '님을 강퇴했습니다');
+    });
+
+    addBtn('🔇 채금', 'danger', function(){
+      const secStr = prompt(nick + '님 채팅 금지 시간(초)', '60');
+      if(secStr === null) return;
+      const sec = parseInt(secStr, 10);
+      if(isNaN(sec) || sec < 1){
+        alert('올바른 초를 입력해 주세요');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/effects/' + targetId).set({
+        type: 'chatban', until: Date.now() + sec * 1000, by: myId
+      });
+      if(dbRef){
+        dbRef.push({
+          type: 'system',
+          text: '🔇 ' + nick + '님이 ' + sec + '초 동안 채팅 금지되었습니다',
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+      localSystemMsg(nick + '님을 ' + sec + '초 채금했습니다');
+    });
+
+    addBtn('🔊 채금 해제', '', function(){
+      const eff = effects[targetId];
+      if(eff && eff.type === 'chatban'){
+        firebase.database().ref('anontalk/' + room + '/effects/' + targetId).remove();
+        if(dbRef){
+          dbRef.push({
+            type: 'system',
+            text: '🔊 ' + nick + '님의 채팅 금지가 해제되었습니다',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+        localSystemMsg(nick + '님의 채금을 해제했습니다');
+      } else {
+        localSystemMsg(nick + '님은 현재 채금 상태가 아닙니다');
+      }
+    });
+
+    addBtn('✅ 강퇴 해제', '', function(){
+      firebase.database().ref('anontalk/' + room + '/kicks/' + targetId).once('value').then(function(snap){
+        if(!snap.val()){
+          localSystemMsg(nick + '님의 강퇴 기록이 없습니다');
+          return;
+        }
+        return snap.ref.remove().then(function(){
+          if(dbRef){
+            dbRef.push({
+              type: 'system',
+              text: '✅ ' + nick + '님의 강퇴(재입장 차단)가 해제되었습니다',
+              ts: firebase.database.ServerValue.TIMESTAMP
+            });
+          }
+          localSystemMsg(nick + '님의 강퇴를 해제했습니다');
+        });
+      }).catch(function(err){
+        console.error(err);
+        localSystemMsg('강퇴 해제에 실패했어요');
+      });
+    });
+
+    addBtn('🗑 메시지 일괄 삭제', 'danger', function(){
+      if(!confirm(nick + '님이 보낸 메시지를 모두 삭제할까요?')) return;
+      const keys = [];
+      (messages || []).forEach(function(m){
+        if(m && m.type === 'msg' && m.senderId === targetId && m._key){
+          keys.push(m._key);
+        }
+      });
+      if(keys.length === 0){
+        localSystemMsg(nick + '님의 삭제할 메시지가 없습니다');
+        return;
+      }
+      const updates = {};
+      keys.forEach(function(k){
+        updates['anontalk/' + room + '/messages/' + k] = null;
+        updates['anontalk/' + room + '/reactions/' + k] = null;
+      });
+      firebase.database().ref().update(updates).then(function(){
+        localSystemMsg(nick + '님의 메시지 ' + keys.length + '개를 삭제했습니다');
+        if(dbRef){
+          dbRef.push({
+            type: 'system',
+            text: '🗑 관리자가 ' + nick + '님의 메시지를 삭제했습니다 (' + keys.length + '개)',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      }).catch(function(err){
+        console.error(err);
+        localSystemMsg('메시지 일괄 삭제에 실패했어요');
+      });
+    });
+
+    const isSpec = isSpectatorUser(targetId);
+    if(isSpec){
+      addBtn('👁 관전 해제', '', function(){
+        firebase.database().ref('anontalk/' + room + '/spectators/' + targetId).remove();
+        localSystemMsg(nick + '님의 관전 모드를 해제했습니다');
+      });
+    } else {
+      addBtn('👁 관전 부여', '', function(){
+        firebase.database().ref('anontalk/' + room + '/spectators/' + targetId).set(true);
+        localSystemMsg(nick + '님을 관전 모드로 설정했습니다 (인원 미집계 · 채팅 비공개)');
+      });
+    }
+
+    if(settings.floorEnabled){
+      if(floorHolders[targetId]){
+        addBtn('✋ 발언권 회수', '', function(){
+          firebase.database().ref('anontalk/' + room + '/floorHolders/' + targetId).remove();
+          firebase.database().ref('anontalk/' + room + '/floorRequests/' + targetId).remove();
+          if(dbRef){
+            dbRef.push({
+              type: 'system',
+              text: '✋ ' + nick + '님의 발언권이 회수되었습니다',
+              ts: firebase.database.ServerValue.TIMESTAMP
+            });
+          }
+          localSystemMsg(nick + '님의 발언권을 회수했습니다');
+        });
+      } else {
+        addBtn('✋ 발언권 부여', '', function(){
+          firebase.database().ref('anontalk/' + room + '/floorHolders/' + targetId).set(true);
+          firebase.database().ref('anontalk/' + room + '/floorRequests/' + targetId).remove();
+          if(dbRef){
+            dbRef.push({
+              type: 'system',
+              text: '✋ ' + nick + '님에게 발언권이 부여되었습니다',
+              ts: firebase.database.ServerValue.TIMESTAMP
+            });
+          }
+          localSystemMsg(nick + '님에게 발언권을 부여했습니다');
+        });
+      }
+    }
+
+    panel.classList.add('active');
+  }
+
+  function closeProfilePanel(){
+    const panel = document.getElementById('profilePanel');
+    if(panel) panel.classList.remove('active');
+  }
+
+  function clearReply(){
+    replyTarget = null;
+    document.getElementById('replyBar').classList.remove('active');
+  }
+
+  function setReply(key, nick, text){
+    replyTarget = { key: key, nick: nick, text: text };
+    document.getElementById('replyNick').textContent = nick;
+    document.getElementById('replyText').textContent = text;
+    document.getElementById('replyBar').classList.add('active');
+    textInput.focus();
+  }
+
+  function scrollToMessage(key){
+    const el = document.querySelector('[data-msg-key="' + key + '"]');
+    if(!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('highlight-flash');
+    setTimeout(function(){ el.classList.remove('highlight-flash'); }, 1200);
+  }
+
+  // ---------- 폭탄 폭발 체크 ----------
+  function scheduleBombCheck(){
+    if(bombTimer){ clearTimeout(bombTimer); bombTimer = null; }
+    if(!bomb || !bomb.explodeAt) return;
+    const delay = bomb.explodeAt - Date.now();
+    if(delay <= 0){
+      tryExplodeBomb();
+      return;
+    }
+    bombTimer = setTimeout(tryExplodeBomb, delay + 50);
+  }
+
+  function tryExplodeBomb(){
+    if(!bomb || !bomb.explodeAt || bomb.explodeAt > Date.now()) return;
+    const key = bomb.holderId + ':' + bomb.explodeAt;
+    if(bombExplodedKey === key) return;
+    // 여러 클라이언트가 동시에 터뜨리지 않도록 transaction 느낌으로 한 번만 처리
+    const bombRef = firebase.database().ref('anontalk/' + room + '/bomb');
+    bombRef.transaction(function(current){
+      if(!current || !current.explodeAt || current.explodeAt > Date.now()) return;
+      if(current._exploded) return;
+      return { ...current, _exploded: true };
+    }).then(function(result){
+      if(!result.committed) return;
+      const data = result.snapshot.val();
+      if(!data) return;
+      bombExplodedKey = data.holderId + ':' + data.explodeAt;
+      const nick = data.holderNick || '익명';
+      const victimId = data.holderId;
+      const msg = (settings.deathMessage || '{nick}님이 사망했습니다.').replace(/\{nick\}/g, nick);
+      dbRef.push({
+        type: 'system',
+        text: '💀 ' + msg,
+        death: true,
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+      // 사망자 채팅 잠금
+      const muteSec = settings.deathMuteSec || 30;
+      if(victimId && muteSec > 0){
+        firebase.database().ref('anontalk/' + room + '/effects/' + victimId).set({
+          type: 'mute',
+          until: Date.now() + muteSec * 1000
+        });
+      }
+      // 전역 쿨타임 시작
+      const cdMs = (settings.bombCooldown || 120) * 1000;
+      firebase.database().ref('anontalk/' + room + '/bombCooldownUntil').set(Date.now() + cdMs);
+      bombRef.remove();
+    }).catch(function(err){ console.error('bomb explode error', err); });
+  }
+
+  // ---------- 명령어 ----------
+  function handleCommand(raw){
+    const parts = raw.trim().split(/\s+/);
+    const head = parts[0];
+
+    if(head === '/어드민'){
+      if(isAdmin){
+        isAdmin = false;
+        updateRoomSub();
+        render(false);
+        updateFloorUI();
+        updateRoomMetaUI();
+        localSystemMsg('관리자 모드를 종료했습니다');
+        return;
+      }
+      if(parts[1] === ADMIN_PASSWORD){
+        isAdmin = true;
+        updateRoomSub();
+        render(false);
+        updateFloorUI();
+        updateRoomMetaUI();
+        localSystemMsg('관리자 모드가 활성화되었습니다');
+      } else {
+        localSystemMsg('비밀번호가 올바르지 않습니다');
+      }
+      return;
+    }
+
+    if(!isAdmin){
+      localSystemMsg('알 수 없는 명령어예요');
+      return;
+    }
+
+    if(head === '/명령어' || head === '/도움말' || head === '/help'){
+      openHelpPanel();
+      return;
+    }
+
+    if(head === '/닉네임' && parts[1] === '변경'){
+      const targetNick = parts[2];
+      const newNick = parts.slice(3).join(' ');
+      if(!targetNick || !newNick){
+        localSystemMsg('사용법: /닉네임 변경 기존닉네임 새닉네임');
+        return;
+      }
+      let targetId = null;
+      for(let i = messages.length - 1; i >= 0; i--){
+        const m = messages[i];
+        if(m.type === 'msg' && (overrides[m.senderId] || m.nick) === targetNick){
+          targetId = m.senderId;
+          break;
+        }
+      }
+      if(!targetId){
+        localSystemMsg('해당 닉네임을 찾을 수 없습니다');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/overrides/' + targetId).set(newNick);
+      localSystemMsg(targetNick + ' → ' + newNick + '(으)로 이름을 변경했습니다');
+      return;
+    }
+
+    if(head === '/청소'){
+      dbRef.remove().then(function(){
+        dbRef.push({
+          type: 'system', text: '관리자가 이 방의 대화 내용을 삭제했습니다',
+          ts: firebase.database.ServerValue.TIMESTAMP, clearFlag: true
+        });
+      });
+      return;
+    }
+
+    if(head === '/닭쿨타임'){
+      const sec = parseInt(parts[1], 10);
+      if(!sec || sec < 0){ localSystemMsg('사용법: /닭쿨타임 초'); return; }
+      firebase.database().ref('anontalk/' + room + '/settings/chickenCooldown').set(sec);
+      localSystemMsg('닭 치기 쿨타임을 ' + sec + '초로 설정했습니다');
+      return;
+    }
+
+    if(head === '/닭지속'){
+      const sec = parseInt(parts[1], 10);
+      if(!sec || sec < 0){ localSystemMsg('사용법: /닭지속 초'); return; }
+      firebase.database().ref('anontalk/' + room + '/settings/chickenDuration').set(sec);
+      localSystemMsg('닭 치기 유지시간을 ' + sec + '초로 설정했습니다');
+      return;
+    }
+
+    if(head === '/멍냥쿨타임'){
+      const sec = parseInt(parts[1], 10);
+      if(!sec || sec < 0){ localSystemMsg('사용법: /멍냥쿨타임 초'); return; }
+      firebase.database().ref('anontalk/' + room + '/settings/petCooldown').set(sec);
+      localSystemMsg('멍냥체 쿨타임을 ' + sec + '초로 설정했습니다');
+      return;
+    }
+
+    if(head === '/멍냥지속'){
+      const sec = parseInt(parts[1], 10);
+      if(!sec || sec < 0){ localSystemMsg('사용법: /멍냥지속 초'); return; }
+      firebase.database().ref('anontalk/' + room + '/settings/petDuration').set(sec);
+      localSystemMsg('멍냥체 유지시간을 ' + sec + '초로 설정했습니다');
+      return;
+    }
+
+    // 공지
+    if(head === '/공지'){
+      const text = parts.slice(1).join(' ').trim();
+      firebase.database().ref('anontalk/' + room + '/notice').set(text || null);
+      localSystemMsg(text ? '공지를 설정했습니다' : '공지를 제거했습니다');
+      return;
+    }
+
+    // 사망 메시지
+    if(head === '/사망메시지'){
+      const text = parts.slice(1).join(' ').trim();
+      if(!text){
+        localSystemMsg('사용법: /사망메시지 {nick}님이 사망했습니다.');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/settings/deathMessage').set(text);
+      localSystemMsg('사망 메시지를 설정했습니다: ' + text);
+      return;
+    }
+
+    // 사망 후 채팅 잠금 시간
+    if(head === '/사망시간'){
+      const sec = parseInt(parts[1], 10);
+      if(isNaN(sec) || sec < 0){
+        localSystemMsg('사용법: /사망시간 초 (예: /사망시간 30)');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/settings/deathMuteSec').set(sec);
+      localSystemMsg('사망 후 유령 상태 시간을 ' + sec + '초로 설정했습니다 (남에게 메시지 안 보임)');
+      return;
+    }
+
+    // 폭탄 시간 범위
+    if(head === '/폭탄시간'){
+      const minS = parseInt(parts[1], 10);
+      const maxS = parseInt(parts[2], 10);
+      if(!minS || !maxS || minS < 5 || maxS < minS){
+        localSystemMsg('사용법: /폭탄시간 최소초 최대초 (예: /폭탄시간 30 90)');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/settings').update({
+        bombMinSec: minS,
+        bombMaxSec: maxS
+      });
+      localSystemMsg('폭탄 터지는 시간을 ' + minS + '~' + maxS + '초로 설정했습니다');
+      return;
+    }
+
+    // 폭탄 전역 쿨타임
+    if(head === '/폭탄쿨타임'){
+      const sec = parseInt(parts[1], 10);
+      if(!sec || sec < 0){ localSystemMsg('사용법: /폭탄쿨타임 초'); return; }
+      firebase.database().ref('anontalk/' + room + '/settings/bombCooldown').set(sec);
+      localSystemMsg('폭탄 전역 쿨타임을 ' + sec + '초로 설정했습니다');
+      return;
+    }
+
+    // 도배 제한: N초 안에 M번
+    if(head === '/도배제한'){
+      const count = parseInt(parts[1], 10);
+      const windowSec = parseInt(parts[2], 10);
+      if(!count || !windowSec || count < 2 || windowSec < 1){
+        localSystemMsg('사용법: /도배제한 횟수 초 (예: /도배제한 5 3 → 3초 안에 5번)');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/settings').update({
+        spamCount: count,
+        spamWindowSec: windowSec
+      });
+      localSystemMsg('도배 기준을 ' + windowSec + '초 안에 ' + count + '번으로 설정했습니다');
+      return;
+    }
+
+    // 도배 정지 시간
+    if(head === '/도배시간'){
+      const sec = parseInt(parts[1], 10);
+      if(!sec || sec < 0){ localSystemMsg('사용법: /도배시간 초'); return; }
+      firebase.database().ref('anontalk/' + room + '/settings/spamMuteSec').set(sec);
+      localSystemMsg('도배 적발 시 채팅 정지 시간을 ' + sec + '초로 설정했습니다');
+      return;
+    }
+
+    // 장난/기능 on/off
+    if(head === '/기능' || head === '/장난'){
+      const arg = (parts[1] || '').toLowerCase();
+      if(arg === '온' || arg === 'on' || arg === '켜' || arg === '켜기'){
+        firebase.database().ref('anontalk/' + room + '/settings/funEnabled').set(true);
+        localSystemMsg('기능을 켰습니다 (닭치기·멍냥체·폭탄 사용 가능)');
+        return;
+      }
+      if(arg === '오프' || arg === 'off' || arg === '꺼' || arg === '끄기'){
+        firebase.database().ref('anontalk/' + room + '/settings/funEnabled').set(false);
+        firebase.database().ref('anontalk/' + room + '/bomb').remove();
+        localSystemMsg('기능을 껐습니다 (채팅·메모·리액션만 가능)');
+        return;
+      }
+      localSystemMsg('사용법: /기능 온  또는  /기능 오프');
+      return;
+    }
+
+    // 발언권 모드
+    if(head === '/발언권'){
+      const arg = (parts[1] || '').toLowerCase();
+      if(arg === '온' || arg === 'on' || arg === '켜' || arg === '켜기'){
+        firebase.database().ref('anontalk/' + room + '/settings/floorEnabled').set(true);
+        // 관리자는 자동으로 발언권 보유
+        firebase.database().ref('anontalk/' + room + '/floorHolders/' + myId).set(true);
+        dbRef.push({
+          type: 'system',
+          text: '✋ 발언권 모드가 켜졌습니다. 발언권이 있는 사람만 채팅할 수 있습니다.',
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+        localSystemMsg('발언권 모드를 켰습니다');
+        return;
+      }
+      if(arg === '오프' || arg === 'off' || arg === '꺼' || arg === '끄기'){
+        firebase.database().ref('anontalk/' + room + '/settings/floorEnabled').set(false);
+        firebase.database().ref('anontalk/' + room + '/floorHolders').remove();
+        firebase.database().ref('anontalk/' + room + '/floorRequests').remove();
+        dbRef.push({
+          type: 'system',
+          text: '발언권 모드가 꺼졌습니다. 모두 채팅할 수 있습니다.',
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+        localSystemMsg('발언권 모드를 껐습니다');
+        return;
+      }
+      if(arg === '회수'){
+        const targetNick = parts.slice(2).join(' ').trim();
+        if(!targetNick){
+          localSystemMsg('사용법: /발언권 회수 닉네임');
+          return;
+        }
+        const targetId = findUserIdByNick(targetNick);
+        if(!targetId){
+          localSystemMsg('해당 닉네임을 찾을 수 없습니다');
+          return;
+        }
+        firebase.database().ref('anontalk/' + room + '/floorHolders/' + targetId).remove();
+        firebase.database().ref('anontalk/' + room + '/floorRequests/' + targetId).remove();
+        dbRef.push({
+          type: 'system',
+          text: '✋ ' + targetNick + '님의 발언권이 회수되었습니다',
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+        localSystemMsg(targetNick + '님의 발언권을 회수했습니다');
+        return;
+      }
+      localSystemMsg('사용법: /발언권 온  ·  /발언권 오프  ·  /발언권 회수 닉네임');
+      return;
+    }
+
+    // 강퇴 (재입장 차단)
+    if(head === '/강퇴'){
+      const sec = parseInt(parts[parts.length - 1], 10);
+      const targetNick = parts.slice(1, isNaN(sec) ? undefined : parts.length - 1).join(' ').trim();
+      if(!targetNick || isNaN(sec) || sec < 1){
+        localSystemMsg('사용법: /강퇴 닉네임 초 (예: /강퇴 홍길동 300 → 5분 차단)');
+        return;
+      }
+      const targetId = findUserIdByNick(targetNick);
+      if(!targetId){
+        localSystemMsg('해당 닉네임을 찾을 수 없습니다 (접속 중이거나 최근 대화한 사람만 가능)');
+        return;
+      }
+      if(targetId === myId){
+        localSystemMsg('자기 자신은 강퇴할 수 없어요');
+        return;
+      }
+      const until = Date.now() + sec * 1000;
+      firebase.database().ref('anontalk/' + room + '/kicks/' + targetId).set({
+        by: myId,
+        byNick: myNick,
+        nick: targetNick,
+        at: Date.now(),
+        until: until
+      });
+      firebase.database().ref('anontalk/' + room + '/presence/' + targetId).remove();
+      const min = Math.floor(sec / 60);
+      const rem = sec % 60;
+      const timeStr = min > 0 ? (min + '분' + (rem ? ' ' + rem + '초' : '')) : (sec + '초');
+      dbRef.push({
+        type: 'system',
+        text: '🚫 ' + targetNick + '님이 관리자에 의해 강퇴되었습니다 (' + timeStr + ' 재입장 차단)',
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+      localSystemMsg(targetNick + '님을 강퇴하고 ' + timeStr + ' 동안 재입장을 차단했습니다');
+      return;
+    }
+
+    // 강퇴 해제
+    if(head === '/강퇴해제'){
+      const targetNick = parts.slice(1).join(' ').trim();
+      if(!targetNick){
+        localSystemMsg('사용법: /강퇴해제 닉네임');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/kicks').once('value').then(function(snap){
+        const kicksMap = snap.val() || {};
+        let targetId = findUserIdByNick(targetNick);
+        if(!targetId || !kicksMap[targetId]){
+          targetId = findKickedUserIdByNick(targetNick, kicksMap);
+        }
+        if(!targetId || !kicksMap[targetId]){
+          localSystemMsg('해당 닉네임의 강퇴 기록을 찾을 수 없습니다');
+          return;
+        }
+        firebase.database().ref('anontalk/' + room + '/kicks/' + targetId).remove();
+        dbRef.push({
+          type: 'system',
+          text: '✅ ' + targetNick + '님의 강퇴(재입장 차단)가 해제되었습니다',
+          ts: firebase.database.ServerValue.TIMESTAMP
+        });
+        localSystemMsg(targetNick + '님의 강퇴를 해제했습니다');
+      }).catch(function(err){
+        console.error(err);
+        localSystemMsg('강퇴 해제에 실패했어요');
+      });
+      return;
+    }
+
+    // 채금 (채팅 금지)
+    if(head === '/채금'){
+      const sec = parseInt(parts[parts.length - 1], 10);
+      const targetNick = parts.slice(1, isNaN(sec) ? undefined : parts.length - 1).join(' ').trim();
+      if(!targetNick || isNaN(sec) || sec < 1){
+        localSystemMsg('사용법: /채금 닉네임 초 (예: /채금 홍길동 60)');
+        return;
+      }
+      const targetId = findUserIdByNick(targetNick);
+      if(!targetId){
+        localSystemMsg('해당 닉네임을 찾을 수 없습니다');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/effects/' + targetId).set({
+        type: 'chatban',
+        until: Date.now() + sec * 1000,
+        by: myId
+      });
+      dbRef.push({
+        type: 'system',
+        text: '🔇 ' + targetNick + '님이 ' + sec + '초 동안 채팅 금지되었습니다',
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+      localSystemMsg(targetNick + '님을 ' + sec + '초 채금했습니다');
+      return;
+    }
+
+    // 관전 모드
+    if(head === '/관전'){
+      const targetNick = parts.slice(1).join(' ').trim();
+      if(!targetNick){
+        localSystemMsg('사용법: /관전 닉네임');
+        return;
+      }
+      const targetId = findUserIdByNick(targetNick);
+      if(!targetId){
+        localSystemMsg('해당 닉네임을 찾을 수 없습니다');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/spectators/' + targetId).set(true);
+      localSystemMsg(targetNick + '님을 관전 모드로 설정했습니다 (인원 미집계 · 채팅 비공개)');
+      return;
+    }
+
+    if(head === '/관전해제'){
+      const targetNick = parts.slice(1).join(' ').trim();
+      if(!targetNick){
+        localSystemMsg('사용법: /관전해제 닉네임');
+        return;
+      }
+      const targetId = findUserIdByNick(targetNick);
+      if(!targetId){
+        // presence에 없어도 spectators 키로 찾을 수 있게 스캔
+        const ids = Object.keys(spectators || {});
+        let found = null;
+        for(let i = 0; i < ids.length; i++){
+          const id = ids[i];
+          const nick = overrides[id] || (presence[id] && presence[id].nick) || '';
+          if(nick === targetNick){ found = id; break; }
+        }
+        if(!found){
+          localSystemMsg('해당 닉네임을 찾을 수 없습니다');
+          return;
+        }
+        firebase.database().ref('anontalk/' + room + '/spectators/' + found).remove();
+        localSystemMsg(targetNick + '님의 관전 모드를 해제했습니다');
+        return;
+      }
+      firebase.database().ref('anontalk/' + room + '/spectators/' + targetId).remove();
+      localSystemMsg(targetNick + '님의 관전 모드를 해제했습니다');
+      return;
+    }
+
+    localSystemMsg('알 수 없는 명령어예요. /명령어 로 목록을 볼 수 있어요.');
+  }
+
+  function applyMyActiveEffect(text){
+    const eff = effects[myId];
+    if(!eff || !eff.until || eff.until <= Date.now()) return text;
+    if(eff.type === 'mute') return text; // 유령 상태: 변환 없음, ghost 플래그만
+    if(eff.type === 'chicken') return '꼬꼬닭';
+    if(eff.type === 'pet') return text + (eff.style === 'cat' ? ' 냥' : ' 멍');
+    return text;
+  }
+
+  function isGhost(){
+    const eff = effects[myId];
+    return !!(eff && eff.type === 'mute' && eff.until && eff.until > Date.now());
+  }
+
+  // ---------- 전송 ----------
+  const textInput = document.getElementById('textInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  function isSpamMuted(){
+    return spamMuteUntil > Date.now();
+  }
+
+  function registerSendAndCheckSpam(){
+    const now = Date.now();
+    const windowMs = (settings.spamWindowSec || 3) * 1000;
+    const limit = settings.spamCount || 5;
+    recentSendTs.push(now);
+    recentSendTs = recentSendTs.filter(function(t){ return now - t <= windowMs; });
+    if(recentSendTs.length >= limit){
+      const muteSec = settings.spamMuteSec || 10;
+      spamMuteUntil = Date.now() + muteSec * 1000;
+      recentSendTs = [];
+      localSystemMsg('⚠️ 도배로 판단되어 ' + muteSec + '초 동안 채팅이 정지됩니다.');
+      updateEffectStatus();
+      return true;
+    }
+    return false;
+  }
+
+  let pendingImage = null; // { dataUrl, sizeLabel }
+  let isSending = false;
+
+  function clearPendingImage(){
+    pendingImage = null;
+    const bar = document.getElementById('imgPreviewBar');
+    if(bar) bar.classList.remove('active');
+  }
+
+  function setPendingImage(dataUrl, sizeLabel){
+    pendingImage = { dataUrl: dataUrl, sizeLabel: sizeLabel || '' };
+    const bar = document.getElementById('imgPreviewBar');
+    const thumb = document.getElementById('imgPreviewThumb');
+    const info = document.getElementById('imgPreviewInfo');
+    if(thumb) thumb.src = dataUrl;
+    if(info) info.textContent = '이미지 첨부됨' + (sizeLabel ? ' · ' + sizeLabel : '');
+    if(bar) bar.classList.add('active');
+  }
+
+  function compressImageFile(file){
+    return new Promise(function(resolve, reject){
+      if(!file || !file.type || file.type.indexOf('image/') !== 0){
+        reject(new Error('이미지 파일만 첨부할 수 있어요'));
+        return;
+      }
+      if(file.size > 12 * 1024 * 1024){
+        reject(new Error('이미지가 너무 커요 (최대 12MB)'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onerror = function(){ reject(new Error('파일을 읽을 수 없어요')); };
+      reader.onload = function(){
+        const img = new Image();
+        img.onload = function(){
+          const maxSide = 900;
+          let w = img.width;
+          let h = img.height;
+          if(w > maxSide || h > maxSide){
+            const ratio = Math.min(maxSide / w, maxSide / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          let quality = 0.72;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          // 약 280KB 이하로 맞추기
+          while(dataUrl.length > 380000 && quality > 0.4){
+            quality -= 0.08;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          if(dataUrl.length > 550000){
+            reject(new Error('이미지가 너무 커서 보낼 수 없어요. 더 작은 사진으로 시도해주세요.'));
+            return;
+          }
+          const kb = Math.round((dataUrl.length * 0.75) / 1024);
+          resolve({ dataUrl: dataUrl, sizeLabel: kb + 'KB' });
+        };
+        img.onerror = function(){ reject(new Error('이미지를 불러오지 못했어요')); };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function openImageLightbox(src){
+    const box = document.getElementById('imgLightbox');
+    const img = document.getElementById('imgLightboxImg');
+    if(!box || !img) return;
+    img.src = src;
+    box.classList.add('active');
+  }
+
+  function sendMessage(){
+    if(isSending) return;
+    const text = textInput.value.trim();
+    if((!text && !pendingImage) || !dbRef) return;
+
+    if(text.startsWith('/')){
+      handleCommand(text);
+      textInput.value = '';
+      textInput.style.height = 'auto';
+      return;
+    }
+
+    if(isChatBanned()){
+      const remain = Math.ceil((effects[myId].until - Date.now()) / 1000);
+      localSystemMsg('🔇 채팅 금지 상태입니다. ' + remain + '초 후 다시 보낼 수 있어요.');
+      return;
+    }
+
+    if(!canSpeak()){
+      localSystemMsg('✋ 발언권 모드입니다. 손바닥 버튼을 눌러 발언권을 요청하세요.');
+      return;
+    }
+
+    if(isSpamMuted()){
+      const remain = Math.ceil((spamMuteUntil - Date.now()) / 1000);
+      localSystemMsg('⚠️ 도배 방지로 ' + remain + '초 동안 채팅을 칠 수 없어요.');
+      return;
+    }
+
+    // 전송 직전에 도배 체크 (이번 전송 포함)
+    if(registerSendAndCheckSpam()){
+      // 이번 메시지는 보내지 않고 정지
+      return;
+    }
+
+    const finalText = text ? applyMyActiveEffect(text) : '';
+    const imageData = pendingImage && pendingImage.dataUrl ? pendingImage.dataUrl : null;
+    const payload = {
+      type:'msg', senderId: myId, nick: myNick, text: finalText,
+      ts: firebase.database.ServerValue.TIMESTAMP
+    };
+    if(imageData) payload.image = imageData;
+    if(isGhost() || isSpectatorUser(myId)) payload.ghost = true;
+    if(replyTarget){
+      payload.replyTo = replyTarget.key;
+      payload.replyNick = replyTarget.nick;
+      payload.replyText = replyTarget.text;
+    }
+
+    // 중복 전송 방지: 잠금 + 첨부/입력 즉시 비우기
+    isSending = true;
+    sendBtn.disabled = true;
+    textInput.value = '';
+    textInput.style.height = 'auto';
+    clearPendingImage();
+    clearReply();
+    setTyping(false);
+
+    dbRef.push(payload).then(function(){
+      isSending = false;
+      sendBtn.disabled = false;
+      textInput.focus();
+      stickToBottom = true;
+      unreadCount = 0;
+      updateScrollBottomBtn();
+    }).catch(function(err){
+      console.error(err);
+      isSending = false;
+      sendBtn.disabled = false;
+      // 실패 시 이미지는 복구하지 않음 (용량 큰 payload 재시도 방지)
+      alert('전송 실패: 이미지가 너무 크거나 서버 규칙을 확인해주세요.');
+    });
+  }
+  sendBtn.addEventListener('click', sendMessage);
+  textInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+  });
+  textInput.addEventListener('input', function(){
+    textInput.style.height = 'auto';
+    textInput.style.height = Math.min(textInput.scrollHeight, 100) + 'px';
+    if(textInput.value.trim()){
+      // 글자가 있는 동안은 계속 입력 중 유지 (자동으로 끄지 않음)
+      setTyping(true);
+    } else {
+      setTyping(false);
+    }
+  });
+
+  const imgPreviewCancel = document.getElementById('imgPreviewCancel');
+  if(imgPreviewCancel){
+    imgPreviewCancel.addEventListener('click', clearPendingImage);
+  }
+  // 클립보드 이미지 붙여넣기
+  textInput.addEventListener('paste', function(e){
+    const items = e.clipboardData && e.clipboardData.items;
+    if(!items) return;
+    for(let i = 0; i < items.length; i++){
+      if(items[i].type && items[i].type.indexOf('image/') === 0){
+        const file = items[i].getAsFile();
+        if(!file) continue;
+        e.preventDefault();
+        compressImageFile(file).then(function(res){
+          setPendingImage(res.dataUrl, res.sizeLabel);
+        }).catch(function(err){
+          alert(err.message || '이미지 처리에 실패했어요');
+        });
+        break;
+      }
+    }
+  });
+  const imgLightbox = document.getElementById('imgLightbox');
+  if(imgLightbox){
+    imgLightbox.addEventListener('click', function(){
+      imgLightbox.classList.remove('active');
+      const img = document.getElementById('imgLightboxImg');
+      if(img) img.src = '';
+    });
+  }
+
+  // ---------- 렌더링 ----------
+  const messagesEl = document.getElementById('messages');
+  function render(shouldScroll){
+    messagesEl.innerHTML = '';
+    const bombActive = bomb && bomb.explodeAt && bomb.explodeAt > Date.now();
+    const canPassBomb = bombActive && bomb.holderId === myId;
+    let lastTimeMinute = null;
+    let lastSenderId = null;
+
+    function appendUnreadDividerIfNeeded(msgKey){
+      if(showUnreadDivider && readUpToKey && msgKey === readUpToKey){
+        const div = document.createElement('div');
+        div.className = 'unread-divider';
+        div.textContent = '여기까지 읽음';
+        messagesEl.appendChild(div);
+        lastSenderId = null;
+      }
+    }
+
+    messages.forEach(m => {
+      if(m.type === 'system'){
+        const div = document.createElement('div');
+        div.className = 'system-msg' + (m.death ? ' death' : '');
+        div.textContent = m.text;
+        messagesEl.appendChild(div);
+        lastSenderId = null;
+        if(m._key) appendUnreadDividerIfNeeded(m._key);
+        return;
+      }
+      // 유령 메시지: 보낸 본인만 회색으로 보임, 다른 사람에게는 안 보임
+      if(m.ghost && m.senderId !== myId) return;
+
+      const mine = m.senderId === myId;
+      const displayNick = overrides[m.senderId] || m.nick;
+      const continued = lastSenderId === m.senderId;
+      lastSenderId = m.senderId;
+      const row = document.createElement('div');
+      row.className = 'msg-row' + (mine ? ' mine' : '') + (m.ghost ? ' ghost' : '') + (continued ? ' continued' : '');
+      if(m._key) row.setAttribute('data-msg-key', m._key);
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.style.background = hashColor(m.senderId || '?');
+      avatar.textContent = (displayNick || '?').slice(0,1);
+
+      // 관리자: 프로필 관리 메뉴 / 폭탄 보유 시 전달
+      if(!mine && m.senderId){
+        if(isAdmin){
+          avatar.classList.add('admin-clickable');
+          avatar.title = '관리 메뉴';
+          avatar.addEventListener('click', function(e){
+            e.stopPropagation();
+            openProfilePanel(m.senderId, displayNick);
+          });
+        } else if(canPassBomb){
+          avatar.classList.add('clickable');
+          avatar.title = '폭탄 전달하기';
+          avatar.addEventListener('click', function(e){
+            e.stopPropagation();
+            passBombTo(m.senderId, displayNick);
+          });
+        }
+      }
+
+      const col = document.createElement('div');
+      col.className = 'bubble-col';
+
+      // 내 메시지는 '나' 라벨 생략 / 연속 메시지는 닉 생략
+      if(!mine && !continued){
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = displayNick || '익명';
+        if(isAdmin && m.senderId){
+          nameSpan.style.cursor = 'pointer';
+          nameSpan.title = '관리 메뉴';
+          nameSpan.addEventListener('click', function(e){
+            e.stopPropagation();
+            openProfilePanel(m.senderId, displayNick);
+          });
+        }
+        meta.appendChild(nameSpan);
+        if(bombActive && bomb.holderId === m.senderId){
+          const bombSpan = document.createElement('span');
+          bombSpan.className = 'bomb-holder';
+          bombSpan.textContent = '💣';
+          meta.appendChild(bombSpan);
+        }
+        if(memos[m.senderId]){
+          const memoSpan = document.createElement('span');
+          memoSpan.className = 'memo';
+          memoSpan.textContent = '· ' + memos[m.senderId];
+          meta.appendChild(memoSpan);
+        }
+        col.appendChild(meta);
+      } else if(mine && !continued && bombActive && bomb.holderId === myId){
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const bombSpan = document.createElement('span');
+        bombSpan.className = 'bomb-holder';
+        bombSpan.textContent = '💣';
+        meta.appendChild(bombSpan);
+        col.appendChild(meta);
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble' + (m.image ? ' has-image' : '');
+      if(m.replyTo){
+        const q = document.createElement('div');
+        q.className = 'reply-quote';
+        q.innerHTML = '<span class="rq-nick">' + (m.replyNick || '') + '</span><span class="rq-text"></span>';
+        const replyPreview = m.replyText || (m.replyImage ? '[이미지]' : '');
+        q.querySelector('.rq-text').textContent = replyPreview;
+        q.addEventListener('click', function(e){
+          e.stopPropagation();
+          scrollToMessage(m.replyTo);
+        });
+        bubble.appendChild(q);
+      }
+      if(m.image){
+        const img = document.createElement('img');
+        img.className = 'msg-image';
+        img.src = m.image;
+        img.alt = '이미지';
+        img.loading = 'lazy';
+        img.addEventListener('click', function(e){
+          e.stopPropagation();
+          openImageLightbox(m.image);
+        });
+        bubble.appendChild(img);
+      }
+      const textNode = document.createElement('div');
+      textNode.className = 'msg-text';
+      textNode.textContent = m.text || '';
+      bubble.appendChild(textNode);
+
+      const bubbleLine = document.createElement('div');
+      bubbleLine.className = 'bubble-line';
+      bubbleLine.appendChild(bubble);
+      const reactLabel = m.text || (m.image ? '[이미지]' : '');
+      if(m._key){ bubbleLine.appendChild(buildReactRow(m._key, displayNick, reactLabel)); }
+
+      col.appendChild(bubbleLine);
+
+      const ts = m.ts || Date.now();
+      const minuteKey = Math.floor(ts / 60000);
+      if(minuteKey !== lastTimeMinute){
+        lastTimeMinute = minuteKey;
+        const time = document.createElement('div');
+        time.className = 'time';
+        time.textContent = fmtTime(ts);
+        col.appendChild(time);
+      }
+
+      row.appendChild(avatar);
+      row.appendChild(col);
+      messagesEl.appendChild(row);
+      if(m._key) appendUnreadDividerIfNeeded(m._key);
+    });
+    if(shouldScroll && stickToBottom){ messagesEl.scrollTop = messagesEl.scrollHeight; }
+  }
+
+  function buildReactRow(key, nick, text){
+    const wrap = document.createElement('div');
+    wrap.className = 'react-row';
+
+    const counts = {};
+    let myEmoji = null;
+    const forKey = reactions[key] || {};
+    Object.keys(forKey).forEach(function(uid2){
+      const emoji = forKey[uid2];
+      counts[emoji] = (counts[emoji] || 0) + 1;
+      if(uid2 === myId) myEmoji = emoji;
+    });
+
+    Object.keys(counts).forEach(function(emoji){
+      const badge = document.createElement('button');
+      badge.type = 'button';
+      badge.className = 'react-badge' + (myEmoji === emoji ? ' mine-reacted' : '');
+      badge.textContent = emoji + ' ' + counts[emoji];
+      badge.addEventListener('click', function(){ toggleReaction(key, emoji); });
+      wrap.appendChild(badge);
+    });
+
+    const replyBtn = document.createElement('button');
+    replyBtn.type = 'button';
+    replyBtn.className = 'react-reply';
+    replyBtn.title = '답장';
+    replyBtn.textContent = '↳';
+    replyBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      setReply(key, nick || '익명', text || '');
+    });
+    wrap.appendChild(replyBtn);
+
+    if(isAdmin){
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'react-delete';
+      delBtn.title = '메시지 삭제';
+      delBtn.textContent = '×';
+      delBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(!confirm('이 메시지를 삭제할까요?')) return;
+        adminDeleteMessage(key);
+      });
+      wrap.appendChild(delBtn);
+    }
+
+    const plus = document.createElement('button');
+    plus.type = 'button';
+    plus.className = 'react-plus';
+    plus.textContent = '+';
+    plus.addEventListener('click', function(e){
+      e.stopPropagation();
+      openPicker = (openPicker === key) ? null : key;
+      render(false);
+    });
+    wrap.appendChild(plus);
+
+    if(openPicker === key){
+      const popup = document.createElement('div');
+      popup.className = 'react-popup';
+      REACTION_EMOJIS.forEach(function(emoji){
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = emoji;
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          toggleReaction(key, emoji);
+        });
+        popup.appendChild(btn);
+      });
+      wrap.appendChild(popup);
+    }
+    return wrap;
+  }
+
+  function toggleReaction(key, emoji){
+    const ref = firebase.database().ref('anontalk/' + room + '/reactions/' + key + '/' + myId);
+    const current = (reactions[key] || {})[myId];
+    if(current === emoji){
+      ref.remove();
+    } else {
+      ref.set(emoji);
+    }
+    openPicker = null;
+    render(false);
+  }
+
+  function adminDeleteMessage(key){
+    if(!isAdmin || !key || !room) return;
+    firebase.database().ref('anontalk/' + room + '/messages/' + key).remove().catch(function(err){
+      console.error(err);
+      localSystemMsg('메시지 삭제에 실패했어요');
+    });
+    firebase.database().ref('anontalk/' + room + '/reactions/' + key).remove().catch(function(){});
+  }
+
+  document.addEventListener('click', function(){
+    if(openPicker !== null){ openPicker = null; render(false); }
+  });
+
+  // ---------- 메모 모달 ----------
+  const overlay = document.getElementById('overlay');
+  const memoList = document.getElementById('memoList');
+
+  document.getElementById('plusBtn').addEventListener('click', function(){
+    const senders = {};
+    messages.forEach(m => { if(m.type === 'msg' && m.senderId !== myId){ senders[m.senderId] = overrides[m.senderId] || m.nick; } });
+    const ids = Object.keys(senders);
+    memoList.innerHTML = '';
+    if(ids.length === 0){
+      memoList.innerHTML = '<div id="memoEmpty">아직 대화한 다른 사람이 없어요</div>';
+    } else {
+      ids.forEach(id => {
+        const item = document.createElement('div');
+        item.className = 'memo-item';
+        const who = document.createElement('div');
+        who.className = 'who';
+        const dot = document.createElement('span');
+        dot.style.cssText = 'width:10px;height:10px;border-radius:50%;display:inline-block;background:' + hashColor(id);
+        who.appendChild(dot);
+        const label = document.createElement('span');
+        label.textContent = senders[id];
+        who.appendChild(label);
+
+        const actions = document.createElement('div');
+        actions.className = 'effect-actions';
+
+        if(settings.funEnabled !== false){
+          const chickenBtn = document.createElement('button');
+          chickenBtn.innerHTML = '🐔 닭 치기<span class="cd-text" data-cd="chicken"></span>';
+          chickenBtn.addEventListener('click', function(){ applyChickenEffect(id, senders[id]); });
+
+          const dogBtn = document.createElement('button');
+          dogBtn.innerHTML = '🐶 멍체<span class="cd-text" data-cd="pet"></span>';
+          dogBtn.addEventListener('click', function(){ applyPetEffect(id, senders[id], 'dog'); });
+
+          const catBtn = document.createElement('button');
+          catBtn.innerHTML = '🐱 냥체<span class="cd-text" data-cd="pet"></span>';
+          catBtn.addEventListener('click', function(){ applyPetEffect(id, senders[id], 'cat'); });
+
+          const bombBtn = document.createElement('button');
+          bombBtn.innerHTML = '💣 폭탄 돌리기<span class="cd-text" data-cd="bomb"></span>';
+          bombBtn.addEventListener('click', function(){ startBomb(id, senders[id]); });
+
+          actions.appendChild(chickenBtn);
+          actions.appendChild(dogBtn);
+          actions.appendChild(catBtn);
+          actions.appendChild(bombBtn);
+        }
+
+        const ta = document.createElement('textarea');
+        ta.placeholder = '누군지 유추해서 메모해 보세요';
+        ta.value = memos[id] || '';
+        ta.addEventListener('change', function(){
+          if(ta.value.trim()){ memos[id] = ta.value.trim(); } else { delete memos[id]; }
+          saveMemos();
+          render(false);
+        });
+        item.appendChild(who);
+        item.appendChild(actions);
+        item.appendChild(ta);
+        memoList.appendChild(item);
+      });
+    }
+    overlay.style.display = 'flex';
+    updateCooldownLabels();
+  });
+  document.getElementById('memoClose').addEventListener('click', function(){ overlay.style.display = 'none'; });
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) overlay.style.display = 'none'; });
+
+  const memberPanel = document.getElementById('memberPanel');
+  const helpPanel = document.getElementById('helpPanel');
+  function openHelpPanel(){
+    const body = document.getElementById('helpBody');
+    if(!body) return;
+    const status = isAdmin
+      ? '(현재 관리자 모드 ON)'
+      : '(현재 관리자 모드 OFF — /어드민 으로 활성화)';
+    body.innerHTML =
+      '<div class="help-section">[관리자 전용]</div>' +
+      '/명령어 — 명령어 목록 보기\n' +
+      '/어드민 (비밀번호) — 관리자 모드 켜기/끄기\n' +
+      '/닉네임 변경 (기존 닉네임) (변경할 닉네임) — 닉네임 강제 변경\n' +
+      '/청소 — 방 대화 내용 전체 삭제\n' +
+      '/공지 내용 — 상단 공지\n' +
+      '/공지 — 공지 내용 삭제\n' +
+      '/강퇴 (닉네임) (초) — 설정한 시간 동안 강제 퇴장 + 재입장 차단\n' +
+      '/강퇴해제 (닉네임) — 재입장 차단 해제\n' +
+      '/채금 (닉네임) (초) — 채팅 금지\n' +
+      '/사망메시지 (닉네임) (님이 사망했습니다.) — (사망 이유 변경 가능)\n' +
+      '/사망시간 (초) — 사망 후 유령 시간\n' +
+      '/폭탄시간 (최소) (최대) — 폭탄 터지는 초 범위\n' +
+      '/폭탄쿨타임 (초) — 폭탄 쿨타임\n' +
+      '/닭쿨타임 (초) — 닭 치기 쿨타임\n' +
+      '/닭지속 (초) — 닭 치기 지속 시간\n' +
+      '/멍냥쿨타임 (초) — 멍냥체 쿨타임\n' +
+      '/멍냥지속 (초) — 멍냥체 지속시간\n' +
+      '/도배제한 (횟수) (초) — 몇 초에 몇 번 입력하면 도배 제한\n' +
+      '/도배시간 초 — 도배 채팅 제한 시간\n' +
+      '/기능 온 — 닭 치기, 멍냥체, 폭탄 돌리기 기능 켜짐\n' +
+      '/기능 오프 — 닭 치기, 멍냥체, 폭탄 돌리기 기능 꺼짐\n' +
+      '/관전 (닉네임) — 방 인원수에 집계되지 않고, 인원 목록에 집계되지 않습니다. 내가 보낸 채팅이 보이지 않습니다.\n' +
+      '/관전해제 (닉네임) — 관전을 해제합니다.\n' +
+      '/발언권 온 — 관리자·발언권 보유자만 채팅 가능\n' +
+      '/발언권 오프 — 발언권 모드 해제\n' +
+      '/발언권 회수 (닉네임) — 해당 유저 발언권 회수\n' +
+      '<div class="help-status">' + status + '</div>';
+    helpPanel.classList.add('active');
+  }
+  function closeHelpPanel(){
+    helpPanel.classList.remove('active');
+  }
+  document.getElementById('helpClose').addEventListener('click', closeHelpPanel);
+  helpPanel.addEventListener('click', function(e){
+    if(e.target === helpPanel) closeHelpPanel();
+  });
+
+  function leaveToMain(){
+    try{
+      if(room){
+        firebase.database().ref('anontalk/' + room + '/presence/' + myId).remove();
+        firebase.database().ref('anontalk/' + room + '/typing/' + myId).remove();
+        // 관리자 자동 관전으로 들어왔다면 관전 기록 제거
+        if(autoSpectatorJoin){
+          firebase.database().ref('anontalk/' + room + '/spectators/' + myId).remove();
+        }
+      }
+    }catch(e){}
+    location.reload();
+  }
+  document.getElementById('backToMainBtn').addEventListener('click', function(){
+    leaveToMain();
+  });
+  document.getElementById('floorRequestBtn').addEventListener('click', function(){
+    requestFloor();
+  });
+
+  document.getElementById('profileClose').addEventListener('click', closeProfilePanel);
+  document.getElementById('profilePanel').addEventListener('click', function(e){
+    if(e.target === document.getElementById('profilePanel')) closeProfilePanel();
+  });
+
+  document.getElementById('roomPwBtn').addEventListener('click', function(){
+    if(!room) return;
+    const hasPw = !!(roomPassword && String(roomPassword).length);
+    if(isAdmin){
+      if(hasPw){
+        const action = prompt(
+          '현재 비밀번호: ' + roomPassword + '\n\n' +
+          '새 비밀번호를 입력하면 변경됩니다.\n' +
+          '비우면 비밀번호가 제거됩니다.\n' +
+          '(취소하면 그대로 둡니다)',
+          roomPassword
+        );
+        if(action === null) return;
+        const next = action.trim();
+        if(!next){
+          firebase.database().ref('anontalk/' + room + '/password').remove().then(function(){
+            localSystemMsg('방 비밀번호를 제거했습니다');
+          });
+        } else {
+          firebase.database().ref('anontalk/' + room + '/password').set(next).then(function(){
+            localSystemMsg('방 비밀번호를 변경했습니다');
+          });
+        }
+      } else {
+        const next = prompt('이 방에 설정할 비밀번호를 입력하세요');
+        if(next === null) return;
+        const pw = next.trim();
+        if(!pw){
+          alert('비밀번호를 입력해 주세요');
+          return;
+        }
+        firebase.database().ref('anontalk/' + room + '/password').set(pw).then(function(){
+          localSystemMsg('방 비밀번호를 설정했습니다');
+        });
+      }
+    } else if(hasPw){
+      alert('이 방의 비밀번호: ' + roomPassword);
+    }
+  });
+
+  document.getElementById('roomLockBtn').addEventListener('click', function(){
+    if(!room || !isAdmin) return;
+    if(roomLocked){
+      firebase.database().ref('anontalk/' + room + '/locked').set(false).then(function(){
+        localSystemMsg('방 잠금을 해제했습니다. 이제 새로 입장할 수 있습니다.');
+        if(dbRef){
+          dbRef.push({
+            type: 'system',
+            text: '🔓 관리자가 방 잠금을 해제했습니다',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      });
+    } else {
+      firebase.database().ref('anontalk/' + room + '/locked').set(true).then(function(){
+        localSystemMsg('방을 잠갔습니다. 새로 입장할 수 없습니다. (이미 접속 중인 사람은 유지)');
+        if(dbRef){
+          dbRef.push({
+            type: 'system',
+            text: '🔒 관리자가 방을 잠갔습니다 (신규 입장 차단)',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+      });
+    }
+  });
+
+  document.getElementById('memberCountBtn').addEventListener('click', function(){
+    renderMemberList();
+    memberPanel.classList.add('active');
+  });
+  document.getElementById('fontSizeBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    closeThemeMenu();
+    const menu = document.getElementById('fontSizeMenu');
+    if(!menu) return;
+    menu.classList.toggle('open');
+  });
+  document.getElementById('fontSizeMenu').addEventListener('click', function(e){
+    e.stopPropagation();
+    const btn = e.target.closest('button[data-level]');
+    if(!btn) return;
+    const lv = parseInt(btn.getAttribute('data-level'), 10);
+    if(isNaN(lv) || lv < 0 || lv >= FONT_SIZES.length) return;
+    fontSizeLevel = lv;
+    try{ localStorage.setItem('anontalk_fontsize', String(fontSizeLevel)); }catch(e2){}
+    applyFontSize();
+    closeFontSizeMenu();
+  });
+  document.getElementById('themeBtn').addEventListener('click', function(e){
+    e.stopPropagation();
+    closeFontSizeMenu();
+    const menu = document.getElementById('themeMenu');
+    if(!menu) return;
+    menu.classList.toggle('open');
+  });
+  document.getElementById('themeMenu').addEventListener('click', function(e){
+    e.stopPropagation();
+    const btn = e.target.closest('button[data-theme]');
+    if(!btn) return;
+    const t = btn.getAttribute('data-theme');
+    if(THEME_IDS.indexOf(t) < 0) return;
+    currentTheme = t;
+    try{ localStorage.setItem('anontalk_theme', currentTheme); }catch(e2){}
+    applyTheme();
+    closeThemeMenu();
+  });
+  document.addEventListener('click', function(){
+    closeFontSizeMenu();
+    closeThemeMenu();
+  });
+  document.getElementById('memberClose').addEventListener('click', function(){
+    memberPanel.classList.remove('active');
+  });
+  memberPanel.addEventListener('click', function(e){
+    if(e.target === memberPanel) memberPanel.classList.remove('active');
+  });
+
+  document.getElementById('scrollBottomBtn').addEventListener('click', function(){
+    scrollToBottom();
+  });
+  document.getElementById('replyCancel').addEventListener('click', clearReply);
+  document.getElementById('replyPreview').addEventListener('click', function(){
+    if(replyTarget && replyTarget.key) scrollToMessage(replyTarget.key);
+  });
+
+  messagesEl.addEventListener('scroll', function(){
+    const el = messagesEl;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    const wasBottom = stickToBottom;
+    stickToBottom = nearBottom;
+    if(nearBottom && unreadCount > 0){
+      unreadCount = 0;
+    }
+    if(wasBottom && !nearBottom){
+      // 위로 올릴 때 현재까지를 읽은 지점으로 기록
+      readUpToKey = getLastMsgKey();
+      if(dividerHideTimer){ clearTimeout(dividerHideTimer); dividerHideTimer = null; }
+    }
+    if(!wasBottom && nearBottom){
+      scheduleDividerHide();
+    }
+    if(wasBottom !== stickToBottom || nearBottom){
+      updateScrollBottomBtn();
+    }
+  });
+
+  // ---------- 쿨타임 ----------
+  function cooldownKey(feature){
+    return 'anontalk_cd_' + feature + '_' + room + '_' + myId;
+  }
+  function cooldownRemainSec(feature){
+    if(feature === 'bomb'){
+      // 전역 쿨타임 (Firebase)
+      return globalBombCooldownRemain();
+    }
+    const raw = localStorage.getItem(cooldownKey(feature));
+    if(!raw) return 0;
+    const remain = Math.ceil((parseInt(raw, 10) - Date.now()) / 1000);
+    return remain > 0 ? remain : 0;
+  }
+  function startCooldown(feature, seconds){
+    localStorage.setItem(cooldownKey(feature), String(Date.now() + seconds * 1000));
+  }
+
+  function globalBombCooldownRemain(){
+    const remain = Math.ceil((globalBombCdUntil - Date.now()) / 1000);
+    return remain > 0 ? remain : 0;
+  }
+
+  function updateCooldownLabels(){
+    if(overlay.style.display !== 'flex') return;
+    document.querySelectorAll('#memoList .cd-text').forEach(function(el){
+      const feature = el.dataset.cd;
+      const remain = cooldownRemainSec(feature);
+      if(remain > 0){
+        el.textContent = remain + '초 남음';
+        el.classList.remove('ready');
+      } else {
+        el.textContent = '사용 가능';
+        el.classList.add('ready');
+      }
+    });
+  }
+  setInterval(updateCooldownLabels, 1000);
+
+  // ---------- 효과 상태 표시 ----------
+  const effectStatusEl = document.getElementById('effectStatus');
+  function updateEffectStatus(){
+    const now = Date.now();
+
+    // 도배 정지가 최우선 표시
+    if(spamMuteUntil > now){
+      const remain = Math.ceil((spamMuteUntil - now) / 1000);
+      effectStatusEl.textContent = '⚠️ 도배 방지 · ' + remain + '초 동안 채팅을 칠 수 없어요';
+      effectStatusEl.classList.add('active');
+      if(textInput) textInput.placeholder = '도배 방지 · 채팅 정지 중';
+      return;
+    }
+
+    const eff = effects[myId];
+    if((!eff || !eff.until || eff.until <= now) && settings.floorEnabled && !canSpeak()){
+      effectStatusEl.textContent = '✋ 발언권 모드 · 손바닥 버튼을 눌러 발언권을 요청하세요';
+      effectStatusEl.classList.add('active');
+      if(textInput) textInput.placeholder = '발언권이 필요합니다 · ✋ 버튼을 눌러 요청하세요';
+      return;
+    }
+    if((!eff || !eff.until || eff.until <= now) && settings.floorEnabled && canSpeak() && !isAdmin){
+      effectStatusEl.textContent = '✋ 발언권 보유 중 · 채팅할 수 있습니다';
+      effectStatusEl.classList.add('active');
+      if(textInput) textInput.placeholder = '메시지 입력…';
+      return;
+    }
+    if(!eff || !eff.until || eff.until <= now){
+      effectStatusEl.classList.remove('active');
+      effectStatusEl.textContent = '';
+      if(textInput) textInput.placeholder = '메시지 입력…';
+      return;
+    }
+    const remain = Math.ceil((eff.until - now) / 1000);
+    if(eff.type === 'chatban'){
+      effectStatusEl.textContent = '🔇 채팅 금지 · ' + remain + '초 동안 메시지를 보낼 수 없어요';
+      if(textInput) textInput.placeholder = '채팅 금지 중';
+    } else if(eff.type === 'chicken'){
+      effectStatusEl.textContent = '🐔 닭 치기 효과 · ' + remain + '초 동안 "꼬꼬닭"으로만 전송돼요';
+      if(textInput) textInput.placeholder = '메시지 입력…';
+    } else if(eff.type === 'pet'){
+      const suffix = eff.style === 'cat' ? '냥' : '멍';
+      effectStatusEl.textContent = '🐾 ' + suffix + '체 효과 · ' + remain + '초 동안 말 끝에 "' + suffix + '"이 붙어요';
+      if(textInput) textInput.placeholder = '메시지 입력…';
+    } else if(eff.type === 'mute'){
+      effectStatusEl.textContent = '💀 유령 상태 · ' + remain + '초 동안 채팅이 다른 사람에게 안 보여요';
+      if(textInput) textInput.placeholder = '유령 상태 · 나만 보이는 채팅';
+    } else {
+      effectStatusEl.classList.remove('active');
+      effectStatusEl.textContent = '';
+      return;
+    }
+    effectStatusEl.classList.add('active');
+  }
+  setInterval(updateEffectStatus, 1000);
+
+  function applyChickenEffect(targetId, targetNick){
+    if(settings.funEnabled === false){
+      localSystemMsg('지금은 기능이 꺼져 있어요. (/기능 온)');
+      return;
+    }
+    const remain = cooldownRemainSec('chicken');
+    if(remain > 0){
+      localSystemMsg('닭 치기는 아직 쿨타임이에요. ' + remain + '초 후 다시 사용할 수 있어요.');
+      return;
+    }
+    const dur = settings.chickenDuration;
+    firebase.database().ref('anontalk/' + room + '/effects/' + targetId).set({
+      type: 'chicken',
+      until: Date.now() + dur * 1000
+    });
+    startCooldown('chicken', settings.chickenCooldown);
+    localSystemMsg(targetNick + '에게 닭 치기를 사용했습니다. (' + dur + '초 동안 유지)');
+    overlay.style.display = 'none';
+  }
+
+  function applyPetEffect(targetId, targetNick, style){
+    if(settings.funEnabled === false){
+      localSystemMsg('지금은 기능이 꺼져 있어요. (/기능 온)');
+      return;
+    }
+    const remain = cooldownRemainSec('pet');
+    if(remain > 0){
+      localSystemMsg('멍냥체는 아직 쿨타임이에요. ' + remain + '초 후 다시 사용할 수 있어요.');
+      return;
+    }
+    const dur = settings.petDuration;
+    firebase.database().ref('anontalk/' + room + '/effects/' + targetId).set({
+      type: 'pet',
+      style: style,
+      until: Date.now() + dur * 1000
+    });
+    startCooldown('pet', settings.petCooldown);
+    localSystemMsg(targetNick + '에게 ' + (style === 'cat' ? '냥체' : '멍체') + '를 사용했습니다. (' + dur + '초 동안 유지)');
+    overlay.style.display = 'none';
+  }
+
+  // ---------- 폭탄 돌리기 ----------
+  function startBomb(targetId, targetNick){
+    if(settings.funEnabled === false){
+      localSystemMsg('지금은 기능이 꺼져 있어요. (/기능 온)');
+      return;
+    }
+    if(bomb && bomb.explodeAt && bomb.explodeAt > Date.now()){
+      localSystemMsg('이미 폭탄이 돌고 있어요.');
+      return;
+    }
+    const remain = cooldownRemainSec('bomb');
+    if(remain > 0){
+      localSystemMsg('폭탄 돌리기는 아직 쿨타임이에요. ' + remain + '초 후 다시 시작할 수 있어요.');
+      return;
+    }
+    const minS = settings.bombMinSec || 30;
+    const maxS = settings.bombMaxSec || 90;
+    const durationSec = minS + Math.floor(Math.random() * (maxS - minS + 1));
+    const explodeAt = Date.now() + durationSec * 1000;
+
+    firebase.database().ref('anontalk/' + room + '/bomb').set({
+      holderId: targetId,
+      holderNick: targetNick,
+      explodeAt: explodeAt,
+      startedBy: myId,
+      startedAt: Date.now()
+    }).then(function(){
+      dbRef.push({
+        type: 'system',
+        text: '💣 ' + myNick + '님이 ' + targetNick + '님에게 폭탄을 넘겼습니다! (프로필을 눌러 전달하세요)',
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+      localSystemMsg(targetNick + '에게 폭탄을 시작했습니다. ' + durationSec + '초 안에 터질 수 있어요.');
+      overlay.style.display = 'none';
+    }).catch(function(err){
+      console.error(err);
+      localSystemMsg('폭탄 시작에 실패했어요.');
+    });
+  }
+
+  function passBombTo(targetId, targetNick){
+    if(!bomb || !bomb.explodeAt || bomb.explodeAt <= Date.now()){
+      localSystemMsg('지금 돌고 있는 폭탄이 없어요.');
+      return;
+    }
+    if(bomb.holderId !== myId){
+      localSystemMsg('폭탄을 들고 있는 사람만 전달할 수 있어요.');
+      return;
+    }
+    if(targetId === myId){
+      localSystemMsg('자기 자신에게는 전달할 수 없어요.');
+      return;
+    }
+    firebase.database().ref('anontalk/' + room + '/bomb').update({
+      holderId: targetId,
+      holderNick: targetNick
+    }).then(function(){
+      dbRef.push({
+        type: 'system',
+        text: '💣 ' + myNick + '님이 ' + targetNick + '님에게 폭탄을 전달했습니다!',
+        ts: firebase.database.ServerValue.TIMESTAMP
+      });
+    }).catch(function(err){
+      console.error(err);
+      localSystemMsg('폭탄 전달에 실패했어요.');
+    });
+  }
+})();
+</script>
+</body>
+</html>

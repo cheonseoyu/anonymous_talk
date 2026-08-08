@@ -100,10 +100,11 @@
     box-shadow:0 0 0 1px rgba(212,163,115,0.15), 0 8px 24px rgba(0,0,0,0.25);
   }
   .mask-badge svg{ width:24px; height:24px; }
-  form{ display:flex; flex-direction:column; gap:12px; width:300px; }
+  form{ display:flex; flex-direction:column; gap:12px; width:min(320px, 100%); max-width:100%; }
   input{
     background:var(--surface); border:1px solid var(--line); color:var(--ink);
     padding:11px 13px; border-radius:10px; font-size:0.92rem; font-family:inherit; outline:none;
+    width:100%; min-width:0; box-sizing:border-box;
   }
   input:focus{ border-color:var(--gold-dim); }
   button.primary{
@@ -111,10 +112,10 @@
     padding:11px 14px; font-weight:600; font-size:0.92rem; cursor:pointer; font-family:inherit;
   }
   button.primary:hover{ filter:brightness(1.08); }
-  .hint{ font-size:0.76rem; color:var(--ink-dim); max-width:300px; line-height:1.5; }
-  .err{ font-size:0.85rem; color:var(--err); max-width:320px; line-height:1.6; }
+  .hint{ font-size:0.76rem; color:var(--ink-dim); max-width:min(320px, 100%); line-height:1.5; }
+  .err{ font-size:0.85rem; color:var(--err); max-width:min(320px, 100%); line-height:1.6; }
   #entryLockBanner{
-    display:none; width:300px; max-width:100%; padding:12px 14px; border-radius:12px;
+    display:none; width:min(320px, 100%); max-width:100%; padding:12px 14px; border-radius:12px;
     background:var(--bomb-bg); border:1px solid var(--bomb); color:var(--bomb-ink);
     font-size:0.85rem; line-height:1.5; text-align:left;
   }
@@ -376,10 +377,10 @@
 
   /* 공지 / 폭탄 안내 바 (둥근 알약, 텍스트 길이만큼) */
   #noticeBar{
-    display:none; margin:8px 12px 0; padding:6px 10px 6px 12px; font-size:0.78rem; text-align:left;
+    display:none; margin:8px auto 0; padding:6px 10px 6px 12px; font-size:0.78rem; text-align:left;
     background:var(--mine-bg); border:1px solid var(--gold-dim); color:var(--gold);
     line-height:1.45; align-items:center; gap:8px; border-radius:20px;
-    width:fit-content; max-width:calc(100% - 24px); align-self:flex-end;
+    width:fit-content; max-width:calc(100% - 24px); align-self:center;
   }
   #noticeBar.active{ display:inline-flex; }
   #noticeBar.bomb-mode{
@@ -392,12 +393,112 @@
     border-radius:14px; padding:3px 10px; font-size:0.68rem; cursor:pointer; font-family:inherit;
   }
   #noticeExpandBtn{
-    display:none; margin:8px 12px 0; align-self:flex-end;
+    display:none; margin:8px auto 0; align-self:center;
     background:var(--mine-bg); border:1px solid var(--gold-dim); color:var(--gold);
     border-radius:14px; padding:3px 10px; font-size:0.68rem; cursor:pointer; font-family:inherit;
     width:fit-content;
   }
   #noticeExpandBtn.show{ display:inline-flex; align-items:center; }
+  .nick-row{
+    display:flex; align-items:stretch; gap:8px; width:100%; min-width:0;
+  }
+  #avatarSlotBtn{
+    flex-shrink:0; width:46px; height:auto; min-height:46px; border-radius:12px;
+    border:1px solid var(--line); background:var(--surface);
+    font-size:1.35rem; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  #avatarSlotBtn:hover{ border-color:var(--gold-dim); }
+  .nick-row #nickInput{
+    flex:1 1 auto; min-width:0; width:auto;
+    text-overflow:clip; overflow:visible;
+  }
+  #avatarSelectPanel{
+    display:none; position:fixed; inset:0; background:var(--overlay);
+    align-items:center; justify-content:center; z-index:15; padding:20px;
+  }
+  #avatarSelectPanel.active{ display:flex; }
+  #avatarSelectBox{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    width:100%; max-width:300px; display:flex; flex-direction:column; overflow:hidden;
+  }
+  #avatarSelectBox .mhead{ padding:16px 18px 10px; border-bottom:1px solid var(--line); }
+  #avatarSelectBox .mhead .t{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; }
+  #avatarSelectBox .mhead .s{ font-size:0.75rem; color:var(--ink-dim); margin-top:4px; }
+  #avatarSelectGrid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; padding:14px 16px;
+  }
+  #avatarSelectGrid button{
+    aspect-ratio:1; border-radius:12px; border:1px solid var(--line);
+    background:var(--surface-2); font-size:1.4rem; cursor:pointer; padding:0;
+    line-height:1; display:flex; align-items:center; justify-content:center;
+  }
+  #avatarSelectGrid button:hover{ border-color:var(--gold-dim); }
+  #avatarSelectGrid button.selected{
+    border-color:var(--gold); background:var(--mine-bg);
+    box-shadow:0 0 0 2px rgba(212,163,115,0.35);
+  }
+  #avatarSelectBox .mfoot{
+    padding:12px 18px; border-top:1px solid var(--line); text-align:right;
+  }
+  #avatarSelectBox .mfoot button{
+    background:var(--gold); color:#1a1410; border:none; border-radius:10px;
+    padding:9px 16px; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.85rem;
+  }
+  .avatar.has-emoji{
+    font-size:1.05rem; background:var(--surface-2) !important; color:inherit;
+  }
+  .member-item .dot.has-emoji{
+    background:transparent !important; font-size:0.85rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #nickChangeBar{
+    display:none; margin:8px auto 0; padding:8px 12px; font-size:0.8rem;
+    background:var(--mine-bg); border:1px solid var(--gold-dim); color:var(--gold);
+    line-height:1.45; align-items:center; gap:10px; border-radius:16px;
+    width:fit-content; max-width:calc(100% - 24px); align-self:center;
+  }
+  #nickChangeBar.show{ display:inline-flex; flex-wrap:wrap; justify-content:center; }
+  #nickChangeBar .ncb-text{ min-width:0; }
+  #nickChangeOpenBtn{
+    flex-shrink:0; background:var(--gold); color:#1a1410; border:none;
+    border-radius:12px; padding:5px 12px; font-size:0.76rem; font-weight:600;
+    cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  #nickChangeOpenBtn:hover{ filter:brightness(1.06); }
+  #nickChangePanel{
+    display:none; position:fixed; inset:0; background:var(--overlay);
+    align-items:center; justify-content:center; z-index:14; padding:20px;
+  }
+  #nickChangePanel.active{ display:flex; }
+  #nickChangeBox{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    width:100%; max-width:320px; display:flex; flex-direction:column; overflow:hidden;
+  }
+  #nickChangeBox .mhead{ padding:16px 18px 10px; border-bottom:1px solid var(--line); }
+  #nickChangeBox .mhead .t{ font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; }
+  #nickChangeBox .mhead .s{ font-size:0.75rem; color:var(--ink-dim); margin-top:4px; }
+  #nickChangeBox .mbody{ padding:16px 18px; display:flex; flex-direction:column; gap:10px; }
+  #nickChangeBox .mbody label{ font-size:0.78rem; color:var(--ink-dim); text-align:left; }
+  #nickChangeInput{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    padding:11px 13px; border-radius:10px; font-size:0.92rem; font-family:inherit; outline:none;
+  }
+  #nickChangeInput:focus{ border-color:var(--gold-dim); }
+  #nickChangeBox .mfoot{
+    padding:12px 18px; border-top:1px solid var(--line);
+    display:flex; justify-content:flex-end; gap:8px;
+  }
+  #nickChangeBox .mfoot button{
+    border-radius:10px; padding:9px 16px; font-weight:600; cursor:pointer;
+    font-family:inherit; font-size:0.85rem;
+  }
+  #nickChangeCancel{
+    background:transparent; border:1px solid var(--line); color:var(--ink-dim);
+  }
+  #nickChangeSubmit{
+    background:var(--gold); color:#1a1410; border:none;
+  }
 
   #messagesWrap{ flex:1; min-height:0; position:relative; display:flex; flex-direction:column; }
   #messages{ flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:10px; --msg-font-size: 0.92rem; }
@@ -473,7 +574,7 @@
   .react-delete:hover{ border-color:var(--err); color:var(--err); background:rgba(201,106,90,0.12); }
 
   #recentRooms, #publicRooms{
-    width:300px; max-width:100%; display:flex; flex-direction:column; gap:6px; margin-top:4px;
+    width:min(320px, 100%); max-width:100%; display:flex; flex-direction:column; gap:6px; margin-top:4px;
   }
   #recentRooms:empty{ display:none; }
   #recentRooms .rtitle, #publicRooms .rtitle{
@@ -757,9 +858,12 @@
       <span id="entryLockReason">관리자가 익명톡 입장을 잠갔습니다.</span>
     </div>
     <form id="joinForm">
-      <input id="roomInput" placeholder="방 이름 (목록에서 선택하거나 직접 입력)" maxlength="30" required />
-      <input id="nickInput" placeholder="익명 닉네임 (같은 방에서 닉네임이 고정돼요)" maxlength="16" required />
-      <input id="roomPwInput" type="password" placeholder="방 비밀번호 (비밀방 · 새 방 설정)" maxlength="32" autocomplete="off" />
+      <input id="roomInput" placeholder="방 이름 (선택 또는 직접 입력)" maxlength="30" required />
+      <div class="nick-row">
+        <button type="button" id="avatarSlotBtn" title="프로필 이미지 선택">😀</button>
+        <input id="nickInput" placeholder="익명 닉네임 (방에서 닉네임 고정)" maxlength="16" required />
+      </div>
+      <input id="roomPwInput" type="password" placeholder="방 비밀번호 (비밀방이면 입력)" maxlength="32" autocomplete="off" />
       <button type="submit" class="primary">입장하기</button>
     </form>
     <div id="publicRooms">
@@ -847,6 +951,7 @@
             <div class="asp-btns">
               <button type="button" id="aspFunToggle">장난 기능</button>
               <button type="button" id="aspFloorToggle">발언권 모드</button>
+              <button type="button" id="aspNickChangeToggle">전체 닉네임 변경</button>
               <button type="button" id="aspRoomLock">방 잠금</button>
               <button type="button" id="aspClearChat" class="danger">청소</button>
               <button type="button" id="aspHelp">명령어</button>
@@ -944,6 +1049,10 @@
       <button type="button" id="noticeToggle">접기</button>
     </div>
     <button type="button" id="noticeExpandBtn">📢 공지 펼치기</button>
+    <div id="nickChangeBar">
+      <span class="ncb-text">새 닉네임으로 변경하시겠습니까?</span>
+      <button type="button" id="nickChangeOpenBtn">닉네임 변경</button>
+    </div>
     <div id="messagesWrap">
       <div id="messages"></div>
       <button type="button" id="scrollBottomBtn" title="맨 아래로">↓ 맨 아래로</button>
@@ -1026,6 +1135,36 @@
   </div>
 </div>
 
+<div id="nickChangePanel">
+  <div id="nickChangeBox">
+    <div class="mhead">
+      <div class="t">닉네임 변경</div>
+      <div class="s">새 닉네임을 입력해 주세요 (최대 16자)</div>
+    </div>
+    <div class="mbody">
+      <label for="nickChangeInput">새 닉네임</label>
+      <input id="nickChangeInput" type="text" maxlength="16" placeholder="새 닉네임" autocomplete="off" />
+    </div>
+    <div class="mfoot">
+      <button type="button" id="nickChangeCancel">취소</button>
+      <button type="button" id="nickChangeSubmit">변경하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="avatarSelectPanel">
+  <div id="avatarSelectBox">
+    <div class="mhead">
+      <div class="t">프로필 이미지</div>
+      <div class="s">원하는 이미지를 골라 주세요</div>
+    </div>
+    <div id="avatarSelectGrid"></div>
+    <div class="mfoot">
+      <button type="button" id="avatarSelectClose">확인</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =======================================================================
    딱 한 번만 할 일: 아래 FIREBASE_CONFIG를 본인 Firebase 프로젝트 값으로
@@ -1104,8 +1243,11 @@ const ADMIN_PASSWORD = "1183";
     spamWindowSec: 3,
     spamMuteSec: 10,
     funEnabled: true,
-    floorEnabled: false
+    floorEnabled: false,
+    allowNickChange: false
   };
+  let myAvatar = '';
+  const AVATAR_PRESETS = ['😀','😎','🐱','🐶','🦊','🐼','🐸','🐵','🌸','🔥','⭐','🌙','💎','🎮','🎵','☕'];
   let floorHolders = {};   // { [userId]: true }
   let floorRequests = {};  // { [userId]: { nick, at } }
   let roomPassword = null; // 현재 방 비밀번호 (없으면 null)
@@ -1667,11 +1809,11 @@ const ADMIN_PASSWORD = "1183";
       lockedNick = saved;
       nickInput.value = saved;
       nickInput.disabled = true;
-      nickInput.placeholder = '이 방에서 사용 중인 닉네임이에요';
+      nickInput.placeholder = '이 방에서 사용 중인 닉네임';
     } else {
       lockedNick = null;
       nickInput.disabled = false;
-      nickInput.placeholder = '익명 닉네임 (같은 방에서 닉네임이 고정돼요)';
+      nickInput.placeholder = '익명 닉네임 (방에서 닉네임 고정)';
     }
   });
 
@@ -1739,14 +1881,142 @@ const ADMIN_PASSWORD = "1183";
 
   function enterRoomAfterChecks(){
     localStorage.setItem('anontalk_nick_' + room + '_' + myId, myNick);
+    try{ localStorage.setItem('anontalk_avatar', myAvatar || ''); }catch(e){}
     saveRecentRoom(room);
     showScreen('');
     document.getElementById('chat').style.display = 'flex';
     document.getElementById('roomTitle').textContent = room + ' 방';
     document.getElementById('meBadge').textContent = '나: ' + myNick;
+    updateNickEditUI();
     loadMemos();
     connectRoom();
   }
+
+  // ---------- 프로필 아바타 선택 ----------
+  function refreshAvatarSlot(){
+    const slot = document.getElementById('avatarSlotBtn');
+    if(slot) slot.textContent = myAvatar || AVATAR_PRESETS[0];
+  }
+  function renderAvatarSelectGrid(){
+    const grid = document.getElementById('avatarSelectGrid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    AVATAR_PRESETS.forEach(function(em){
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = em;
+      if(em === myAvatar) b.classList.add('selected');
+      b.addEventListener('click', function(){
+        myAvatar = em;
+        try{ localStorage.setItem('anontalk_avatar', myAvatar); }catch(e2){}
+        refreshAvatarSlot();
+        grid.querySelectorAll('button').forEach(function(x){ x.classList.remove('selected'); });
+        b.classList.add('selected');
+      });
+      grid.appendChild(b);
+    });
+  }
+  function openAvatarSelectPanel(){
+    renderAvatarSelectGrid();
+    const panel = document.getElementById('avatarSelectPanel');
+    if(panel) panel.classList.add('active');
+  }
+  function closeAvatarSelectPanel(){
+    const panel = document.getElementById('avatarSelectPanel');
+    if(panel) panel.classList.remove('active');
+  }
+  function initAvatarPicker(){
+    try{ myAvatar = localStorage.getItem('anontalk_avatar') || ''; }catch(e){ myAvatar = ''; }
+    if(!myAvatar || AVATAR_PRESETS.indexOf(myAvatar) < 0) myAvatar = AVATAR_PRESETS[0];
+    refreshAvatarSlot();
+    const slot = document.getElementById('avatarSlotBtn');
+    if(slot) slot.addEventListener('click', openAvatarSelectPanel);
+    const closeBtn = document.getElementById('avatarSelectClose');
+    if(closeBtn) closeBtn.addEventListener('click', closeAvatarSelectPanel);
+    const panel = document.getElementById('avatarSelectPanel');
+    if(panel){
+      panel.addEventListener('click', function(e){
+        if(e.target === panel) closeAvatarSelectPanel();
+      });
+    }
+  }
+  initAvatarPicker();
+
+  function updateNickEditUI(){
+    const bar = document.getElementById('nickChangeBar');
+    if(!bar) return;
+    if(settings.allowNickChange && room){
+      bar.classList.add('show');
+    } else {
+      bar.classList.remove('show');
+      closeNickChangePanel();
+    }
+  }
+
+  function openNickChangePanel(){
+    if(!settings.allowNickChange){
+      localSystemMsg('지금은 닉네임 변경이 허용되지 않습니다');
+      return;
+    }
+    const panel = document.getElementById('nickChangePanel');
+    const input = document.getElementById('nickChangeInput');
+    if(!panel) return;
+    if(input){
+      input.value = myNick || '';
+      setTimeout(function(){ input.focus(); input.select(); }, 50);
+    }
+    panel.classList.add('active');
+  }
+  function closeNickChangePanel(){
+    const panel = document.getElementById('nickChangePanel');
+    if(panel) panel.classList.remove('active');
+  }
+
+  function changeMyNick(newNick){
+    newNick = (newNick || '').trim();
+    if(!newNick){
+      localSystemMsg('닉네임을 입력해 주세요');
+      return false;
+    }
+    if(newNick.length > 16){
+      localSystemMsg('닉네임은 16자 이내로 입력해 주세요');
+      return false;
+    }
+    if(!settings.allowNickChange && !isAdmin){
+      localSystemMsg('지금은 닉네임 변경이 허용되지 않습니다');
+      return false;
+    }
+    if(newNick === myNick){
+      closeNickChangePanel();
+      return true;
+    }
+    const old = myNick;
+    myNick = newNick;
+    try{ localStorage.setItem('anontalk_nick_' + room + '_' + myId, myNick); }catch(e){}
+    document.getElementById('meBadge').textContent = '나: ' + myNick;
+    if(room){
+      firebase.database().ref('anontalk/' + room + '/overrides/' + myId).set(myNick);
+      if(typeof window.__writeMyPresence === 'function') window.__writeMyPresence();
+    }
+    closeNickChangePanel();
+    localSystemMsg('닉네임을 변경했습니다: ' + old + ' → ' + myNick);
+    return true;
+  }
+
+  document.getElementById('nickChangeOpenBtn').addEventListener('click', openNickChangePanel);
+  document.getElementById('nickChangeCancel').addEventListener('click', closeNickChangePanel);
+  document.getElementById('nickChangeSubmit').addEventListener('click', function(){
+    changeMyNick(document.getElementById('nickChangeInput').value);
+  });
+  document.getElementById('nickChangeInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      changeMyNick(document.getElementById('nickChangeInput').value);
+    }
+  });
+  document.getElementById('nickChangePanel').addEventListener('click', function(e){
+    if(e.target === document.getElementById('nickChangePanel')) closeNickChangePanel();
+  });
 
   document.getElementById('joinForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -1897,6 +2167,11 @@ const ADMIN_PASSWORD = "1183";
       floorBtn.classList.toggle('on', !!settings.floorEnabled);
       floorBtn.textContent = settings.floorEnabled ? '발언권 ON' : '발언권 OFF';
     }
+    const nickBtn = document.getElementById('aspNickChangeToggle');
+    if(nickBtn){
+      nickBtn.classList.toggle('on', !!settings.allowNickChange);
+      nickBtn.textContent = settings.allowNickChange ? '닉변경 허용 ON' : '전체 닉네임 변경';
+    }
     const lockBtn = document.getElementById('aspRoomLock');
     if(lockBtn){
       lockBtn.classList.toggle('on', !!roomLocked);
@@ -1996,6 +2271,23 @@ const ADMIN_PASSWORD = "1183";
           if(dbRef) dbRef.push({ type:'system', text:'발언권 모드가 꺼졌습니다. 모두 채팅할 수 있습니다.', ts: firebase.database.ServerValue.TIMESTAMP });
           localSystemMsg('발언권 모드를 껐습니다');
         }
+      });
+    });
+    document.getElementById('aspNickChangeToggle').addEventListener('click', function(){
+      if(!isAdmin || !room) return;
+      const next = !settings.allowNickChange;
+      settingsRef().child('allowNickChange').set(next).then(function(){
+        if(dbRef){
+          dbRef.push({
+            type: 'system',
+            text: next
+              ? '✏️ 전체 닉네임 변경이 허용되었습니다. 상단의 [닉네임 변경] 버튼을 눌러 변경할 수 있습니다.'
+              : '닉네임 변경이 잠겼습니다. 더 이상 스스로 닉네임을 바꿀 수 없습니다.',
+            ts: firebase.database.ServerValue.TIMESTAMP
+          });
+        }
+        localSystemMsg(next ? '전체 닉네임 변경을 켰습니다' : '전체 닉네임 변경을 껐습니다');
+        updateNickEditUI();
       });
     });
     document.getElementById('aspRoomLock').addEventListener('click', function(){
@@ -2220,9 +2512,11 @@ const ADMIN_PASSWORD = "1183";
         spamWindowSec: s.spamWindowSec || 3,
         spamMuteSec: s.spamMuteSec || 10,
         funEnabled: s.funEnabled !== false,
-        floorEnabled: !!s.floorEnabled
+        floorEnabled: !!s.floorEnabled,
+        allowNickChange: !!s.allowNickChange
       };
       updateFloorUI();
+      updateNickEditUI();
       const asp = document.getElementById('adminSettingsPanel');
       if(asp && asp.classList.contains('open')) syncAdminSettingsPanel();
     });
@@ -2278,12 +2572,15 @@ const ADMIN_PASSWORD = "1183";
     // 접속 인원 (presence)
     const presenceRef = firebase.database().ref('anontalk/' + room + '/presence/' + myId);
     function writeMyPresence(){
-      presenceRef.set({
+      const data = {
         nick: myNick,
         joinedAt: firebase.database.ServerValue.TIMESTAMP,
         spectator: isSpectatorUser(myId)
-      });
+      };
+      if(myAvatar) data.avatar = myAvatar;
+      presenceRef.set(data);
     }
+    window.__writeMyPresence = writeMyPresence;
     presenceRef.onDisconnect().remove();
 
     firebase.database().ref('anontalk/' + room + '/presence').on('value', function(snapshot){
@@ -2388,7 +2685,12 @@ const ADMIN_PASSWORD = "1183";
       item.className = 'member-item';
       const dot = document.createElement('span');
       dot.className = 'dot';
-      dot.style.background = hashColor(id);
+      if(p.avatar){
+        dot.classList.add('has-emoji');
+        dot.textContent = p.avatar;
+      } else {
+        dot.style.background = hashColor(id);
+      }
       const nickEl = document.createElement('span');
       nickEl.className = 'nick';
       nickEl.textContent = nick;
@@ -3085,6 +3387,32 @@ const ADMIN_PASSWORD = "1183";
       return;
     }
 
+    // 전체 닉네임 변경 허용 시: /닉 새닉네임
+    if((head === '/닉' || head === '/닉네임변경' || (head === '/닉네임' && parts[1] !== '변경')) && !isAdmin){
+      if(!settings.allowNickChange){
+        localSystemMsg('지금은 닉네임 변경이 허용되지 않습니다');
+        return;
+      }
+      const newNick = (head === '/닉네임' && parts[1] === '변경')
+        ? parts.slice(2).join(' ')
+        : parts.slice(1).join(' ');
+      if(!newNick){
+        localSystemMsg('사용법: /닉 새닉네임');
+        return;
+      }
+      changeMyNick(newNick);
+      return;
+    }
+    if((head === '/닉' || head === '/닉네임변경') && isAdmin && parts[1] !== '변경'){
+      const newNick = parts.slice(1).join(' ');
+      if(!newNick){
+        localSystemMsg('사용법: /닉 새닉네임');
+        return;
+      }
+      changeMyNick(newNick);
+      return;
+    }
+
     if(!isAdmin){
       localSystemMsg('알 수 없는 명령어예요');
       return;
@@ -3734,8 +4062,15 @@ const ADMIN_PASSWORD = "1183";
 
       const avatar = document.createElement('div');
       avatar.className = 'avatar';
-      avatar.style.background = hashColor(m.senderId || '?');
-      avatar.textContent = (displayNick || '?').slice(0,1);
+      const senderAvatar = (presence[m.senderId] && presence[m.senderId].avatar)
+        || (m.senderId === myId ? myAvatar : '');
+      if(senderAvatar){
+        avatar.classList.add('has-emoji');
+        avatar.textContent = senderAvatar;
+      } else {
+        avatar.style.background = hashColor(m.senderId || '?');
+        avatar.textContent = (displayNick || '?').slice(0,1);
+      }
 
       // 관리자: 프로필 관리 메뉴 / 폭탄 보유 시 전달
       if(!mine && m.senderId){
@@ -4038,7 +4373,9 @@ const ADMIN_PASSWORD = "1183";
       '/명령어 — 명령어 목록 보기\n' +
       '/어드민 (비밀번호) — 관리자 모드 켜기/끄기\n' +
       '/닉네임 변경 (기존 닉네임) (변경할 닉네임) — 닉네임 강제 변경\n' +
+      '/닉 (새 닉네임) — 내 닉네임 변경 (전체 닉네임 변경 허용 시)\n' +
       '/청소 — 방 대화 내용 전체 삭제\n' +
+      '관리자 설정 · 전체 닉네임 변경 — 모든 유저가 스스로 닉 변경 가능\n' +
       '/공지 내용 — 상단 공지\n' +
       '/공지 — 공지 내용 삭제\n' +
       '/강퇴 (닉네임) (초) — 설정한 시간 동안 강제 퇴장 + 재입장 차단\n' +
